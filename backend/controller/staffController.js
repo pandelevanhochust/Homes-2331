@@ -1,9 +1,11 @@
+import dotenv from 'dotenv';
 import AsyncHandler from "express-async-handler";
+import { GoogleSpreadsheet } from 'google-spreadsheet';
 
-require('dotenv').config(); 
-const {GoogleSpreadsheet} = require('google-spreadsheet');
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY ;
+dotenv.config();
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const SHEET_ID =  process.env.SHEET_ID;
 const STAFF_SHEET = process.env.STAFF_SHEET;
@@ -14,7 +16,7 @@ let doc;
 
 const connectGoogleSheet  = async() => {
     if  (!doc){
-        const doc = new GoogleSpreadsheet(SHEET_ID);
+        doc = new GoogleSpreadsheet(SHEET_ID);
         await doc.useServiceAccountAuth({
             client_email: CLIENT_EMAIL,
             private_key: PRIVATE_KEY,
@@ -32,7 +34,7 @@ export const listStaff = AsyncHandler(async(req,res) => {
         await connectGoogleSheet();
         
         const staff_sheet = doc.sheetsByTitle(STAFF_SHEET);
-        const rows = staff_sheet.getRows();
+        const rows = await staff_sheet.getRows();
 
         if (!rows || rows.length == 0 ){
             return res.status(404).json( {message: "No staff found"});
@@ -47,7 +49,7 @@ export const listStaff = AsyncHandler(async(req,res) => {
             password: row.StaffPassword,
             income: row.Income,
         }));    
-        res.json(staff);
+        res.status(200).json(staff);
 
     } catch(error){
         res.status(500).json("Failed to retrieve data");

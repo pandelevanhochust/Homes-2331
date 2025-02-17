@@ -7,7 +7,7 @@ import Loader from '../component/Loader';
 function HomeScreen() {
   const dispatch = useDispatch();
   const staffList = useSelector((state) => state.staffList);
-  const {loading,success,staff, error} = staffList;
+  const {loading,success,staff = [], error} = staffList;
 
   useEffect(() => {
     dispatch(listStaff())

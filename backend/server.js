@@ -1,14 +1,13 @@
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
-import { errorHandler, notFound } from "./midddleware/errorMiddleware.js";
+import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import staffRoutes from "./routes/staffRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 dotenv.config();
-console.log(process.env);
 
 if (process.env.NODE_ENV === "development" ){
     app.use(morgan("dev"));
@@ -25,5 +24,5 @@ app.use(errorHandler);
 
 
 app.listen(PORT, ()=>{
-    console.log('Server is running on port ${PORT}',PORT);
+    console.log(`Server is running on port ${PORT}`,PORT);
 })
