@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from 'react-router-dom';
 import { listStaff } from '../actions/staffAction';
 import Loader from '../component/Loader';
+import StaffItem from '../component/StaffItem';
 
 function HomeScreen() {
   const dispatch = useDispatch();
@@ -13,6 +15,9 @@ function HomeScreen() {
     dispatch(listStaff())
   },[dispatch]);
 
+  console.log("staffList:", staffList); // Debug xem staffList chứa gì
+  console.log("staff:", staff); // Kiểm tra staff trước khi map()
+
   return (
     <Container className="mt-4">
       <h2>Staff List</h2>
@@ -21,10 +26,10 @@ function HomeScreen() {
         : error ? (<h1> {error} </h1>)
         :(
           <ul className="list-group">
-          {staff.map(staff => (
-              <li key={staff.id} className="list-group-item">
-                  <Link to={`/staffprofile/${staff.id}`} className="text-decoration-none">
-                      {staff.name}
+          {staff.map(member => (
+              <li key={member.id} className="list-group-item">
+                  <Link to={`/staffprofile/${member.id}`} className="text-decoration-none">
+                    <StaffItem key={member.id} staff={member} />
                   </Link>
               </li>
           ))}

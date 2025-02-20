@@ -84,10 +84,12 @@ export const staffDeleteReducer = (state = {}, action) => {
         case STAFF_DELETE_REQUEST:
             return {
                 loading: true,
+                error: false,
             };
         case STAFF_DELETE_SUCCESS:
             return {
                 loading:false,
+                error: false,
                 success: true,
             };
         case STAFF_DELETE_FAIL:

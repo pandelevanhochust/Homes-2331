@@ -1,11 +1,11 @@
 import express from "express";
-import { listStaff } from "../controller/staffController.js";
+import { createStaff, listStaff } from "../controller/staffController.js";
 
 const router = express.Router();
 
 router.route("/")
     .get(listStaff)
-    // .post(createStaff)
+    .post(createStaff)
 
 // router.route("/:id")
 //     .get(getStaff)
