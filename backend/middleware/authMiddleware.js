@@ -1,6 +1,5 @@
 import AsyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
-import User from "../models/userModel.js";
 
 const checkAuth = AsyncHandler(async (req, res, next) => {
   const headerAuth = req.headers.authorization;
@@ -14,11 +13,8 @@ const checkAuth = AsyncHandler(async (req, res, next) => {
     const token = headerAuth.split(" ")[1];
 
     // Verify the token using the JWT secret (use environment variable for security)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Fetch the user from the database and exclude the password field
-    req.user = await User.findById(decoded.id).select("-password");
-
+    const decoded = jwt.verify(token, process.env.secret_key);
+    
     // Proceed to the next middleware or route handler
     next();
   } catch (error) {
@@ -27,13 +23,5 @@ const checkAuth = AsyncHandler(async (req, res, next) => {
   }
 });
 
-const checkAdmin = (req,res,next) => {
-  if (req.user && req.user.isAdmin) {
-    next();
-  } else {
-    res.status(401);
-    throw new Error("Not authorized as admin");
-  }
-};
 
-export { checkAdmin, checkAuth };
+export { checkAuth };

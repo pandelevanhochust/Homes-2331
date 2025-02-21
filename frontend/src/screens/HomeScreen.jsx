@@ -15,8 +15,6 @@ function HomeScreen() {
     dispatch(listStaff())
   },[dispatch]);
 
-  console.log("staffList:", staffList); // Debug xem staffList chứa gì
-  console.log("staff:", staff); // Kiểm tra staff trước khi map()
 
   return (
     <Container className="mt-4">
