@@ -15,6 +15,7 @@ function HomeScreen() {
     dispatch(listStaff())
   },[dispatch]);
 
+  console.log(staff);
 
   return (
     <Container className="mt-4">
@@ -25,9 +26,9 @@ function HomeScreen() {
         :(
           <ul className="list-group">
           {staff.map(member => (
-              <li key={member.id} className="list-group-item">
-                  <Link to={`/staffprofile/${member.id}`} className="text-decoration-none">
-                    <StaffItem key={member.id} staff={member} />
+              <li key={member._id} className="list-group-item">
+                  <Link to={`/staff/${member._id}`} className="text-decoration-none">
+                    <StaffItem key={member._id} staff={member} />
                   </Link>
               </li>
           ))}

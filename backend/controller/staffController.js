@@ -15,20 +15,38 @@ const SERVICE_SHEET = process.env.SERVICE_SHEET;
 export const listStaff = AsyncHandler(async (req, res) => {
     try {
         const doc = await connectGoogleSheet();
+        // connect two sheets
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
+        const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
 
-        const rows = await staffSheet.getRows();
+        const staff_rows = await staffSheet.getRows();
+        const service_rows = await serviceSheet.getRows();
 
-        if (!rows || rows.length === 0) {
+        if (!staff_rows|| staff_rows.length === 0) {
             return res.status(404).json({ message: 'No staff found' });
-        }
+        };
 
-        const staff = rows.map((row) => ({
-            id: row._rowNumber,
+        const mapService = {};
+        service_rows.forEach((row) => {
+            const name = row._rawData[0];
+            if (!mapService[name]){
+                mapService[name] = [];
+            }
+            mapService[name].push({
+                service: row._rawData[1],
+                type: row._rawData[2] || "N/A",
+                username: row._rawData[3] || "N/A",
+                password: row._rawData[4] || "N/A",
+            });
+        });
+
+        console.log(service_rows); 
+
+        const staff = staff_rows.map((row) => ({
+            _id: row._rowNumber,
             name: row._rawData[0] || 'Unknown',
             image: row._rawData[1] || 'none',
-            service: row._rawData[2] || 'Unknown',
-            income: row._rawData[3] || 0,
+            service: mapService[row._rawData[0]] || "none",
         }));
 
         res.status(200).json(staff);
@@ -50,7 +68,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
         }
 
         const sheet =  role === "admin" ?  ADMIN_SHEET : STAFF_SHEET;
-
+ 
         const doc = await connectGoogleSheet();
         const staffSheet = doc.sheetsByTitle[sheet];
 
@@ -62,10 +80,9 @@ export const createStaff = AsyncHandler(async (req, res) => {
                 Image: image || 'null',                
             });    
         }else{
-            await staffSheet.addRow({
+            await staffSheet.addRow({   
                 Name: name,
                 Image: image,
-                Service: service,
             });
 
             const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET]; 
@@ -83,3 +100,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
         res.status(500).json({ message: 'Failed to create staff' });
     }
 });
+
+//GET api/staff/id
+
+//DELETE 

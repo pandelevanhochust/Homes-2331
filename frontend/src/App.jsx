@@ -7,6 +7,7 @@ import Header from './component/Header';
 import AddStaffScreen from './screens/AddStaffScreen';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
+import StaffProfileScreen from './screens/StaffProfileScreen';
 
 function App() {
 
@@ -29,7 +30,9 @@ function App() {
         <Routes>
           <Route path="/login" element={userInfo ? <Navigate to="/" /> : <LoginScreen />} />
           <Route path="/addstaff" element={userInfo ? <AddStaffScreen /> : <Navigate to="/login" />} />
-          <Route path="/" element={userInfo ? <HomeScreen /> : <Navigate to="/login" />} />        </Routes>
+          <Route path="/" element={userInfo ? <HomeScreen /> : <Navigate to="/login" />} />        
+          <Route path="/staff/:id" element={userInfo ? <StaffProfileScreen /> : <Navigate to="/login" />} />        
+        </Routes>
       </Container>
     </Router>
   );

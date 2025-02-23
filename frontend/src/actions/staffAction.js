@@ -8,19 +8,26 @@ import {
 } from "../constants/staffConstant";
 
 
-export const createStaff = (staff) => async(dispatch) => {
+export const createStaff = (staff) => async(dispatch,getState) => {
     try {
         dispatch({
             type: STAFF_CREATE_REQUEST,
         });
 
+        const {adminLogin: {userInfo},} = getState();
+        console.log(userInfo.token);
+        console.log("Authorization Header:", `Bearer ${userInfo.token}`);
+
+
         const response = await fetch("/api/staff",{
             method : "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                Authorization : `Bearer ${userInfo.token}`,
             },
             body: JSON.stringify(staff),
         });
+
 
         if (!response.ok) {
             const errorData = await response.json(); // Parse the error response

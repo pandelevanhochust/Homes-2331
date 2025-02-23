@@ -44,7 +44,7 @@ export const loginAdmin = AsyncHandler( async(req,res) => {
             username: admin.username,
             password: admin.password,
             image: admin.image,
-            token: token(admin._id),
+            token: token(admin.username),
         });
 
     }catch(error){
