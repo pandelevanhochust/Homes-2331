@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { React, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ function HomeScreen() {
   const dispatch = useDispatch();
   const staffList = useSelector((state) => state.staffList);
   const {loading,success,staff = [], error} = staffList;
-
+  
   useEffect(() => {
     dispatch(listStaff())
   },[dispatch]);
@@ -26,11 +26,11 @@ function HomeScreen() {
         :(
           <ul className="list-group">
           {staff.map(member => (
-              <li key={member._id} className="list-group-item">
+              // <li key={member._id} className="list-group-item">
                   <Link to={`/staff/${member._id}`} className="text-decoration-none">
                     <StaffItem key={member._id} staff={member} />
                   </Link>
-              </li>
+              // </li>
           ))}
           </ul>
         )

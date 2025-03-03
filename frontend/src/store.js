@@ -4,10 +4,13 @@ import { thunk } from 'redux-thunk';
 import { adminLoginReducer } from './reducers/adminReducers';
 
 import {
+    serviceCreateReducer,
+    serviceDeleteReducer,
+    serviceUpdateReducer,
     staffCreateReducer,
     staffDeleteReducer,
     staffListReducer,
-    staffUpdateReducer
+    staffUpdateReducer,
 } from './reducers/staffReducers';
 
 const root = combineReducers({
@@ -16,14 +19,22 @@ const root = combineReducers({
     staffUpdate: staffUpdateReducer,
     staffList: staffListReducer,
     adminLogin: adminLoginReducer,
+    serviceCreate: serviceCreateReducer,
+    serviceDelete: serviceDeleteReducer,
+    serviceUpdate: serviceUpdateReducer,
 });
 
 console.log(localStorage.getItem("userInfo"));
 const userInfoFromStorage = localStorage.getItem("userInfo")
     ? JSON.parse(localStorage.getItem("userInfo")) : null;
 
+// console.log(localStorage.getItem("staff"));
+// const staffListFromStorage = localStorage.getItem("staff")
+//     ?JSON.parse(localStorage.getItem("staff")) : null;
+
 const initialState = {
     adminLogin: {userInfo: userInfoFromStorage},
+    // staffList: {staff: staffListFromStorage},
 };
 
 export const store = createStore(

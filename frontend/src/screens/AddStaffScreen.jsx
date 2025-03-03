@@ -12,7 +12,7 @@ function AddStaffScreen() {
   const [role, setRole] = useState("staff");
   const [service, setService] = useState("none");
   const [image, setImage] = useState("none");
-  const [type,setType] = useState("none")
+  const [type, setType] = useState("online"); // Default to "Online"
   const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
@@ -44,14 +44,14 @@ function AddStaffScreen() {
     service,
     username,
     password,
-    image: image ? image.name : "none", 
+    image: image ? image.name : "none",
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm()){
+    if (validateForm()) {
       dispatch(createStaff(staff));
-    };
+    }
     console.log("Submitted Data:", staff);
     setTimeout(() => {
       navigate("/");
@@ -62,7 +62,6 @@ function AddStaffScreen() {
     <Container className="mt-4">
       <h2>Add Staff</h2>
       <Form onSubmit={handleSubmit}>
-        {/* Name */}
         <Form.Group className="mb-3">
           <Form.Label>Name</Form.Label>
           <Form.Control 
@@ -73,7 +72,6 @@ function AddStaffScreen() {
           />
         </Form.Group>
 
-        {/* Role Selection (Radio Buttons) */}
         <Form.Group className="mb-3">
           <Form.Label>Role</Form.Label>
           <div>
@@ -96,90 +94,71 @@ function AddStaffScreen() {
           </div>
         </Form.Group>
 
-        {role === "staff" ?
-        <>
-          <Form.Group className="mb-3">
-          <Form.Label>Type</Form.Label>
-          <div className="d-flex gap-3">
-            <Form.Check
-              type="radio"
-              label="Online"
-              name="type"
-              value="online"
-              checked={type === "online"}
-              onChange={(e) => setType(e.target.value)}
-            />
-            <Form.Check
-              type="radio"
-              label="Offline"
-              name="type"
-              value="offline"
-              checked={type === "offline"}
-              onChange={(e) => setType(e.target.value)}
-            />
-          </div>
+        {role === "staff" && (
+          <>
+            <Form.Group className="mb-3">
+              <Form.Label>Type</Form.Label>
+              <Form.Select value={type} onChange={(e) => setType(e.target.value)}>
+                <option value="Online">Online</option>
+                <option value="N/A">N/A</option>
+                <option value="Offline">Offline</option>
+              </Form.Select>
             </Form.Group>
-              <Form.Group className="mb-3">
+
+            <Form.Group className="mb-3">
               <Form.Label>Service</Form.Label>
               <Form.Control 
                 type="text" 
                 placeholder="Enter service" 
                 value={service}
                 onChange={(e) => setService(e.target.value)}
-                isInvalid={!!errors.username}
               />
-              <Form.Control.Feedback type="invalid">
-                {errors.username}
-              </Form.Control.Feedback>
             </Form.Group>
-        </>
-        :
-        <>
-        </>
-        }
+          </>
+        )}
 
-          <Form.Group className="mb-3">
-            <Form.Label>Username</Form.Label>
-            <Form.Control 
-              type="email" 
-              placeholder="Enter email" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              isInvalid={!!errors.username}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.username}
-            </Form.Control.Feedback>
-          </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Username</Form.Label>
+          <Form.Control 
+            type="email" 
+            placeholder="Enter email" 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            isInvalid={!!errors.username}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.username}
+          </Form.Control.Feedback>
+        </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <Form.Control 
-              type="password" 
-              placeholder="Enter password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Password</Form.Label>
+          <Form.Control 
+            type="password" 
+            placeholder="Enter password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Form.Group>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control 
-              type="password" 
-              placeholder="Confirm password" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              isInvalid={!!errors.confirmPassword}
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.confirmPassword}
-            </Form.Control.Feedback>
-          </Form.Group>
-        
+        <Form.Group className="mb-3">
+          <Form.Label>Confirm Password</Form.Label>
+          <Form.Control 
+            type="password" 
+            placeholder="Confirm password" 
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            isInvalid={!!errors.confirmPassword}
+          />
+          <Form.Control.Feedback type="invalid">
+            {errors.confirmPassword}
+          </Form.Control.Feedback>
+        </Form.Group>
+      
         <Form.Group className="mb-3">
           <Form.Label>Upload Image</Form.Label>
           <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
-          {image === "none"? <></> : <> {image && <p className="mt-2">Selected: {image.name}</p>} </> }
+          {image !== "none" && image && <p className="mt-2">Selected: {image.name}</p>}
         </Form.Group>
 
         <Button variant="primary" type="submit">Submit</Button>

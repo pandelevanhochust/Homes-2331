@@ -1,11 +1,20 @@
 import {
+    SERVICE_UPDATE_FAIL,
+    SERVICE_UPDATE_REQUEST,
+    SERVICE_UPDATE_SUCCESS,
     STAFF_CREATE_FAIL,
     STAFF_CREATE_REQUEST,
     STAFF_CREATE_SUCCESS,
+    STAFF_DELETE_FAIL,
+    STAFF_DELETE_REQUEST,
+    STAFF_DELETE_SUCCESS,
     STAFF_LIST_FAIL,
     STAFF_LIST_REQUEST,
     STAFF_LIST_SUCCESS,
-} from "../constants/staffConstant";
+    STAFF_UPDATE_FAIL,
+    STAFF_UPDATE_REQUEST,
+    STAFF_UPDATE_SUCCESS
+} from "../constants/staffConstant.js";
 
 
 export const createStaff = (staff) => async(dispatch,getState) => {
@@ -29,11 +38,11 @@ export const createStaff = (staff) => async(dispatch,getState) => {
         });
 
 
-        if (!response.ok) {
-            const errorData = await response.json(); // Parse the error response
-            console.error("Server error response:", errorData);
-            throw new Error(errorData.message || "Failed to create staff");
-        }
+        // if (!response.ok) {
+        //     const errorData = await response.json(); // Parse the error response
+        //     console.error("Server error response:", errorData);
+        //     throw new Error(errorData.message || "Failed to create staff");
+        // }
 
         const data = await response.json();
         console.log(data);
@@ -63,11 +72,6 @@ export const listStaff = () => async (dispatch) => {
         }
         );
 
-        // const contentType = response.headers.get("content-type");
-        // if (!contentType || !contentType.includes("application/json")) {
-        //     throw new Error("Invalid JSON response from server");
-        // }
-
         const data = await response.json();
         console.log(data);
 
@@ -75,9 +79,115 @@ export const listStaff = () => async (dispatch) => {
             type: STAFF_LIST_SUCCESS,
             payload: data,
         })
+
+        localStorage.setItem("staffList",JSON.stringify(data))
+
     } catch(error) {
         dispatch({
             type: STAFF_LIST_FAIL,
+            payload: error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message || "Failed",
+        })
+    }
+}
+
+export const updateStaff = (staff) => async (dispatch,getState) =>{
+    try{
+        dispatch({
+            type: STAFF_UPDATE_REQUEST,
+        });
+        
+        const {adminLogin: {userInfo},} = getState();
+
+        const respone = await fetch("/api/staff/update",{
+            method: "PUT",
+            headers: {  
+                "Content-Type": "application/json",
+                Authorization : `Bearer ${userInfo.token}`,
+            },
+            body: JSON.stringify(staff),
+        });
+
+        const data = await respone.json();
+        console.log(data);
+        
+        dispatch({
+            type: STAFF_UPDATE_SUCCESS,
+            payload: data.updatedRow,
+        })
+        
+    }catch(error){
+        dispatch({
+            type: STAFF_UPDATE_FAIL,
+            payload: error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message || "Failed",
+        })
+    }
+}
+
+export const deleteStaff = (staff) => async (dispatch,getState) =>{
+    try {
+        dispatch({
+            type: STAFF_DELETE_REQUEST,
+        })
+
+        const {adminLogin: {userInfo}} = getState();
+
+        const response = await fetch(`/api/delete/${staff._id}`,{
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization : `Bearer ${userInfo.token}`,
+            },
+        });
+
+        const data = response.json();
+
+        dispatch({
+            type: STAFF_DELETE_SUCCESS,
+            payload: data,
+        })
+
+    }catch(error){
+        dispatch({
+            type: STAFF_DELETE_FAIL,
+            payload: error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message || "Failed",
+        })
+    }
+}
+
+export const updateService = (service) => async (dispatch,getState) => {
+    try{
+        dispatch({
+            type:SERVICE_UPDATE_REQUEST,
+        });
+        
+        const {adminLogin: {userInfo}}= getState();
+ 
+        const response = await fetch("/api/staff/service",{
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+            body: JSON.stringify(service),
+        })
+
+        const data = response.json();
+        // console.log(data);
+
+        dispatch({
+            type: SERVICE_UPDATE_SUCCESS,
+            payload: data,
+        })
+
+    }catch(error){
+        dispatch({
+            type: SERVICE_UPDATE_FAIL,
             payload: error.response && error.response.data.message
             ? error.response.data.message
             : error.message || "Failed",

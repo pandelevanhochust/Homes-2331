@@ -21,30 +21,26 @@ export const loginAdmin = AsyncHandler( async(req,res) => {
         const {username, password} = req.body;
         const rows = await admin_sheet.getRows();
         
-        const rowData = rows.map(row => ({
-            _id: row._rowNumber,
-            name: row._rawData[0] || 'anonymous',
-            username: row._rawData[1],
-            password: row._rawData[2],
-            image: row._rawData[3] || 'none',
-        }));
+        const adminRowIndex = rows.findIndex(row => row._rawData[1] === username);
 
-        const admin = rowData.find(row => row.username === username);
-
-        if (!admin) {
+        if (!adminRowIndex) {
             return res.status(401).json({ message: "Invalid username" });
         }
-        if (!(password === admin.password)){
+
+        const adminRow = rows[adminRowIndex];
+        console.log("here the adminRow",adminRow);
+
+        if (!(adminRow._rawData[2] === password)){
             return res.status(401).json({ message: "Invalid password" });
         } 
 
         res.status(201).json({
-            _id: admin._id,
-            name: admin.name,
-            username: admin.username,
-            password: admin.password,
-            image: admin.image,
-            token: token(admin.username),
+            _id: adminRow._rowNumber,
+            name: adminRow._rawData[0],
+            username: adminRow._rawData[1],
+            password: adminRow._rawData[2],
+            image: adminRow._rawData[3],
+            token: token(adminRow._rawData[1]),
         });
 
     }catch(error){
