@@ -218,3 +218,57 @@ export const updateService = AsyncHandler(async (req,res) => {
         res.status(500).json({ message: "Failed to update service" });
     }    
 });
+
+export const deleteService = AsyncHandler(async(req,res ) => {
+    try{
+        const {name, service} = req.body;
+        const doc = await connectGoogleSheet();
+        const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
+        const rows = await serviceSheet.getRows();
+        console.log(rows);
+
+        let serviceDeleted = false;
+
+        for (const row of rows) { // Loop in reverse to safely delete
+            if (row._rawData[0] === name && row._rawData[1] === service) {
+                await row.delete(); 
+                serviceDeleted = true;
+                break; 
+            }
+        }
+
+        if (!serviceDeleted) {
+            return res.status(404).json({ message: "Service not found for the given staff member." });
+        }
+
+        console.log("Service successfully deleted");
+        res.status(200).json({
+            message: "Service deleted successfully!",
+            deletedRow: { name, service },
+        });
+
+    }catch(error){
+        console.error("Error deleting service:", error);
+        res.status(500).json({ message: "Failed to delete service" });
+    }
+})
+
+export const createService = AsyncHandler(async(req,res ) => {
+    try{
+        const {name, service} = req.body;
+        const doc = await connectGoogleSheet();
+        const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
+        const rows = await serviceSheet.getRows();
+        console.log(rows);
+
+        console.log("Service successfully deleted");
+        res.status(200).json({
+            message: "Service deleted successfully!",
+            createdService: ""
+        });
+
+    }catch(error){
+        console.error("Error deleting service:", error);
+        res.status(500).json({ message: "Failed to delete service" });
+    }
+})

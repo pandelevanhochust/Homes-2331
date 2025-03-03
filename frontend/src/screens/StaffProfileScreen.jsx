@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Card, Container, Form, ListGroup } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { updateService, updateStaff } from "../actions/staffAction";
+import { deleteService, updateService, updateStaff } from "../actions/staffAction";
 
 function StaffProfileScreen() {
   const location = useLocation();
@@ -68,6 +68,7 @@ function StaffProfileScreen() {
   const handleRemoveService = (index) => {
     const updatedServices = services.filter((_, i) => i !== index);
     setServices(updatedServices);
+    dispatch(deleteService(services[index]));
   };
 
   // Handle adding a new service

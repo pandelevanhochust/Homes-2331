@@ -1,5 +1,5 @@
 import express from "express";
-import { createStaff, listStaff, updateService, updateStaff } from "../controller/staffController.js";
+import { createService, createStaff, deleteService, listStaff, updateService, updateStaff } from "../controller/staffController.js";
 import { checkAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -13,7 +13,8 @@ router.route("/update")
 
 router.route("/service")
     .put(checkAuth,updateService)
-    // .post(checkAuth,addService)
+    .delete(checkAuth,deleteService)
+    .post(checkAuth,createService)
 
 // router.route("/delete/:id")
 //     .delete(checkAuth,deleteStaff)
