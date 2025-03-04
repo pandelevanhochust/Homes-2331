@@ -22,6 +22,11 @@ function AddStaffScreen() {
     setImage(e.target.files[0]);
   };
 
+  const generateID = () => {
+    return crypto.randomUUID();
+  };
+
+
   const validateForm = () => {
     let newErrors = {};
 
@@ -38,6 +43,7 @@ function AddStaffScreen() {
   };
 
   const staff = {
+    // id: generateID(),
     name,
     role,
     type,
@@ -55,7 +61,7 @@ function AddStaffScreen() {
     console.log("Submitted Data:", staff);
     setTimeout(() => {
       navigate("/");
-    }, 1500);
+    }, 4000);
   };
 
   return (
@@ -107,12 +113,14 @@ function AddStaffScreen() {
 
             <Form.Group className="mb-3">
               <Form.Label>Service</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Enter service" 
-                value={service}
-                onChange={(e) => setService(e.target.value)}
-              />
+              <Form.Select value={service} required onChange={(e) => setService(e.target.value)}>
+                <option value="">Select a service</option>
+                <option value="sm">Sm</option>
+                <option value="Sakura">Sakura</option>
+                <option value="Imlive">Imlive</option> 
+                <option value="Chat">Chat</option> 
+                <option value="Many vid">Many vid</option> 
+              </Form.Select>
             </Form.Group>
           </>
         )}

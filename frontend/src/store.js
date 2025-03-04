@@ -9,6 +9,7 @@ import {
     serviceUpdateReducer,
     staffCreateReducer,
     staffDeleteReducer,
+    staffDetailReducer,
     staffListReducer,
     staffUpdateReducer,
 } from './reducers/staffReducers';
@@ -22,6 +23,7 @@ const root = combineReducers({
     serviceCreate: serviceCreateReducer,
     serviceDelete: serviceDeleteReducer,
     serviceUpdate: serviceUpdateReducer,
+    staffDetail: staffDetailReducer,
 });
 
 console.log(localStorage.getItem("userInfo"));

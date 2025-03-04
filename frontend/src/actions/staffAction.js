@@ -14,6 +14,9 @@ import {
     STAFF_DELETE_FAIL,
     STAFF_DELETE_REQUEST,
     STAFF_DELETE_SUCCESS,
+    STAFF_DETAIL_FAIL,
+    STAFF_DETAIL_REQUEST,
+    STAFF_DETAIL_SUCCESS,
     STAFF_LIST_FAIL,
     STAFF_LIST_REQUEST,
     STAFF_LIST_SUCCESS,
@@ -42,13 +45,6 @@ export const createStaff = (staff) => async(dispatch,getState) => {
             },
             body: JSON.stringify(staff),
         });
-
-
-        // if (!response.ok) {
-        //     const errorData = await response.json(); // Parse the error response
-        //     console.error("Server error response:", errorData);
-        //     throw new Error(errorData.message || "Failed to create staff");
-        // }
 
         const data = await response.json();
         console.log(data);
@@ -149,7 +145,7 @@ export const deleteStaff = (staff) => async (dispatch,getState) =>{
             },
         });
 
-        const data = response.json();
+        const data = await response.json();
 
         dispatch({
             type: STAFF_DELETE_SUCCESS,
@@ -166,7 +162,7 @@ export const deleteStaff = (staff) => async (dispatch,getState) =>{
     }
 }
 
-export const updateService = (service) => async (dispatch,getState) => {
+export const updateService = (name,service) => async (dispatch,getState) => {
     try{
         dispatch({
             type:SERVICE_UPDATE_REQUEST,
@@ -180,10 +176,10 @@ export const updateService = (service) => async (dispatch,getState) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify(service),
+            body: JSON.stringify({name,service}),
         })
 
-        const data = response.json();
+        const data = await response.json();
         // console.log(data);
 
         dispatch({
@@ -234,7 +230,8 @@ export const deleteService = (service) => async (dispatch,getState) => {
     }
 }
 
-export const createService = (service) => async (dispatch,getState) => {
+export const createService = (name,service) => async (dispatch,getState) => {
+    console.log("Service creating:",name, service);
     try{
         dispatch({
             type:SERVICE_CREATE_REQUEST,
@@ -248,10 +245,10 @@ export const createService = (service) => async (dispatch,getState) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify(service),
+            body: JSON.stringify({name,service}),
         })
 
-        const data = response.json();
+        const data = await response.json();
         dispatch({
             type: SERVICE_CREATE_SUCCESS,
             payload: data.createdService,
@@ -260,6 +257,38 @@ export const createService = (service) => async (dispatch,getState) => {
     }catch(error){
         dispatch({
             type: SERVICE_CREATE_FAIL,
+            payload: error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message || "Failed",
+        })
+    }
+}
+
+
+export const getStaffDetail = (id) => async(dispatch,getState) =>{
+    try{
+        dispatch({
+            type: STAFF_DETAIL_REQUEST,
+        })
+        const {adminLogin: {userInfo}} = getState();
+
+        const response = await fetch(`/api/staff/${id}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userInfo.token}`,
+            },
+        })
+
+        const data = await response.json();
+        dispatch({
+            type: STAFF_DETAIL_SUCCESS,
+            payload: data,
+        })
+
+    }catch(error){
+        dispatch({
+            type: STAFF_DETAIL_FAIL,
             payload: error.response && error.response.data.message
             ? error.response.data.message
             : error.message || "Failed",

@@ -1,100 +1,113 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, Container, Form, ListGroup } from "react-bootstrap";
-import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import { deleteService, updateService, updateStaff } from "../actions/staffAction";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import { createService, deleteService, getStaffDetail, updateService, updateStaff } from "../actions/staffAction";
+import Loader from "../component/Loader";
+import ServiceItem from "../component/ServiceItem";
 
 function StaffProfileScreen() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { staff } = location.state || {};
+  const { id } = useParams();
 
-  console.log(staff);
+  // Fetching staff details from Redux state
+  const { loading, success, error, staff_detail } = useSelector((state) => state.staffDetail);
 
-  if (!staff) {
-    return <h2 className="text-center mt-5 text-danger">Staff Not Found</h2>;
-  }
-
-  // Separate states for editing basic info and services
   const [editBasicInfo, setEditBasicInfo] = useState(false);
-  const [staffData, setStaffData] = useState({ ...staff });
-  // Manage services separately with editMode for each
-  const [services, setServices] = useState(
-    staff.service.map((service) => ({ ...service, editMode: false }))
-  );
+  const [addOrEdit, setAddOrEdit] = useState("edit");
+  const [staffData, setStaffData] = useState({});
+  const [services, setServices] = useState([]);
 
-  // Calculate total income
-  const totalIncome = services.reduce((sum, s) => sum + (parseFloat(s.income) || 0), 0);
+  // Fetch staff details
+  useEffect(() => {
+    dispatch(getStaffDetail(id));
+  }, [dispatch, id]);
 
-  // Handle form input changes (Basic Info)
+  // Sync state when new staff data is available
+  useEffect(() => {
+    if (staff_detail) {
+      setStaffData({ ...staff_detail });
+      setServices(staff_detail.service.map((service) => ({ ...service, editMode: false })));
+    }
+  }, [staff_detail]);
+
+  // Handle Basic Info Changes
   const handleChange = (e) => {
-    setStaffData({ ...staffData, [e.target.name]: e.target.value });
+    setStaffData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Call API to update staff basic info
-  const updateStaffHandler = async () => {
-    console.log("Updated Basic Info:", staffData);
+  // Save Basic Info
+  const updateStaffHandler = () => {
     dispatch(updateStaff(staffData));
     setEditBasicInfo(false);
   };
 
-  // Handle updating service fields
+  // Handle Service Changes
   const handleServiceChange = (index, field, value) => {
-    const updatedServices = [...services];
-    updatedServices[index][field] = value;
-    setServices(updatedServices);
+    setServices((prev) =>
+      prev.map((service, i) => (i === index ? { ...service, [field]: value } : service))
+    );
   };
 
-  // Save a Single Service Update
+  // Save or Add a Service
   const updateServiceHandler = (index) => {
-    const updatedServices = services.map((service, i) =>
-      i === index ? { ...service, editMode: false } : service
-    );
-    setServices(updatedServices);
-    console.log("Service update:",services[index]);
-    dispatch(updateService(services[index]))
+    if (addOrEdit === "add") {
+      dispatch(createService(staffData.name, services[services.length - 1]));
+      setAddOrEdit("edit");
+    } else {
+      dispatch(updateService(staffData.name, services[index]));
+    }
+    setServices((prev) => prev.map((service, i) => (i === index ? { ...service, editMode: false } : service)));
   };
-  
-  // Toggle Buttons
+
+  // Toggle Edit Mode for a Service
   const toggleEditService = (index) => {
-    const updatedServices = services.map((service, i) =>
-      i === index ? { ...service, editMode: !service.editMode } : service
+    setServices((prev) =>
+      prev.map((service, i) => (i === index ? { ...service, editMode: !service.editMode } : service))
     );
-    setServices(updatedServices);
   };
 
-  // Remove a Single Service
+  // Remove a Service
   const handleRemoveService = (index) => {
-    const updatedServices = services.filter((_, i) => i !== index);
-    setServices(updatedServices);
     dispatch(deleteService(services[index]));
+    setServices((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Handle adding a new service
-  const handleAddService = () => {
-    setServices([...services, { service: "", username: "", password: "", income: "", editMode: true }]);
+  // Add a New Service
+  const addServiceToggler = () => {
+    setServices((prev) => [...prev, { service: "", username: "", password: "", income: "", editMode: true }]);
+    setAddOrEdit("add");
   };
+
+  if (loading) {
+    return (
+      <Loader/>
+    );
+  }
+
+  if (!staff_detail) {
+    return <h2 className="text-center mt-5 text-danger">{error}</h2>;
+  }
 
   return (
-    <Container fluid className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <Card className="shadow-lg p-4 w-100" style={{ maxWidth: "600px" }}>
+  <Container fluid className="d-flex justify-content-center align-items-center min-vh-100">    
+    <Card className="shadow-lg p-4 w-100" style={{ maxWidth: "1400px", height: "95vh" }}>
         {/* Profile Image */}
         <Card.Img
           variant="top"
-          src={staff.image || "https://via.placeholder.com/150"}
-          alt={staff.name}
+          src={staffData.image || "https://via.placeholder.com/150"}
+          alt={staffData.name}
           className="rounded-circle mx-auto d-block shadow-sm"
           style={{ width: "150px", height: "150px", objectFit: "cover" }}
         />
 
         <Card.Body>
-          {/* Staff Profile Title with Edit & Save Button */}
+          {/* Staff Profile */}
           <div className="d-flex justify-content-between align-items-center">
             <h4>Staff Profile</h4>
             <div className="d-flex gap-2">
               {editBasicInfo && (
-                <Button variant="info" size="sm" onClick={updateStaffHandler}>
+                <Button variant="success" size="sm" onClick={updateStaffHandler}>
                   Save
                 </Button>
               )}
@@ -106,28 +119,32 @@ function StaffProfileScreen() {
           <hr />
 
           {/* Basic Info Section */}
-          <ListGroup variant="flush" className="mb-3 text-start">
-            <ListGroup.Item>
+        <ListGroup variant="flush" className="mb-3 text-start">
+
+          <ListGroup.Item className="d-flex justify-content-between align-items-center gap-3">
+            {/* Name Field */}
+            <div className="w-50">
               <strong>Name:</strong>{" "}
               {editBasicInfo ? (
                 <Form.Control type="text" name="name" value={staffData.name} onChange={handleChange} />
               ) : (
                 staffData.name || "N/A"
               )}
-            </ListGroup.Item>
+            </div>
 
-            <ListGroup.Item>
+            {/* Type Field */}
+            <div className="w-50">
               <strong>Type:</strong>{" "}
               {editBasicInfo ? (
-                <Form.Select name="type" value={staffData.type} onChange={handleChange}>
+                <Form.Select name="type" value={staffData.type} required onChange={handleChange}>
                   <option value="Online">Online</option>
                   <option value="Offline">Offline</option>
-                  <option value="N/A">N/A</option>
                 </Form.Select>
               ) : (
                 staffData.type || "N/A"
               )}
-            </ListGroup.Item>
+            </div>
+          </ListGroup.Item>
 
             <ListGroup.Item>
               <strong>Equipment:</strong>{" "}
@@ -136,12 +153,14 @@ function StaffProfileScreen() {
               ) : (
                 staffData.equipment || "N/A"
               )}
-              {" | "}
-              <strong>Equipment Debt:</strong>{" "}
+            </ListGroup.Item>
+
+            <ListGroup.Item>
+              <strong>EquipmentDebt:</strong>{" "}
               {editBasicInfo ? (
                 <Form.Control type="text" name="equipmentDebt" value={staffData.equipmentDebt} onChange={handleChange} />
               ) : (
-                staffData.equipmentDebt || "N/A"
+                staffData.equipmentDebt || ""
               )}
             </ListGroup.Item>
 
@@ -150,66 +169,35 @@ function StaffProfileScreen() {
               {editBasicInfo ? (
                 <Form.Control type="text" name="note" value={staffData.note} onChange={handleChange} />
               ) : (
-                staffData.note || "No additional notes"
+                staffData.note || ""
               )}
             </ListGroup.Item>
-          </ListGroup>
+
+        </ListGroup>
 
           <hr />
 
           {/* Services Section */}
           <div className="d-flex justify-content-between align-items-center">
             <h5>Services</h5>
-            <Button style={{ background: "none", border: "none", color: "gray" }} className="mt-2 w-10" onClick={handleAddService}> ➕ Add</Button>
+            <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
+              ➕ Add
+            </Button>
           </div>
 
           <ListGroup variant="flush">
             {services.map((service, index) => (
-              <ListGroup.Item key={index} className="text-start m-3 d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="mb-2">
-                    <strong>Service:</strong>{" "}
-                      {service.service}
-                    <br />
-                  </div>
-      
-                  <strong>Username:</strong>{" "}                  
-                    {service.editMode ? (
-                      <Form.Control type="text" value={service.username} onChange={(e) => handleServiceChange(index, "username", e.target.value)} />
-                    ) : (
-                      service.username
-                    )}
-                  | <strong>Password:</strong>
-                    {service.editMode ? (
-                      <Form.Control type="text" value={service.password} onChange={(e) => handleServiceChange(index, "password", e.target.value)} />
-                    ) : (
-                      service.password
-                    )}
-                  <br />
-
-                  <strong>Income:</strong>{" "}
-                  {service.editMode ? (
-                    <Form.Control type="number" value={service.income} onChange={(e) => handleServiceChange(index, "income", e.target.value)} />
-                  ) : (
-                    `$${service.income}`
-                  )}
-
-                  {service.editMode ? (
-                    <div className="d-flex gap-2 mt-3">
-                      <Button variant="success" size="sm" onClick={() => updateServiceHandler(index)}>Save</Button>
-                      <Button variant="danger" size="sm" onClick={() => handleRemoveService(index)}>🗑 Remove</Button>
-                    </div>
-                  ) : (
-                    <div className="d-flex gap-2 mt-3">
-                      <Button variant="info" size="sm" onClick={() => toggleEditService(index)}>Edit</Button>
-                    </div>
-                  )}
-                </div>
-
-              </ListGroup.Item>
+              <ServiceItem
+                key={index}
+                service={service}
+                index={index}
+                toggleEdit={toggleEditService}
+                handleSave={updateServiceHandler}
+                handleChange={handleServiceChange}
+                handleRemove={handleRemoveService}
+              />
             ))}
           </ListGroup>
-
         </Card.Body>
       </Card>
     </Container>

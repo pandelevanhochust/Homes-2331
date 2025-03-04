@@ -1,7 +1,6 @@
 import { React, useEffect } from 'react';
-import { Container } from 'react-bootstrap';
+import { Alert, Container, ListGroup } from 'react-bootstrap';
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from 'react-router-dom';
 import { listStaff } from '../actions/staffAction';
 import Loader from '../component/Loader';
 import StaffItem from '../component/StaffItem';
@@ -20,22 +19,27 @@ function HomeScreen() {
   return (
     <Container className="mt-4">
       <h2>Staff List</h2>
-      {
-        loading ?  (<Loader/>)
-        : error ? (<h1> {error} </h1>)
-        :(
-          <ul className="list-group">
-          {staff.map(member => (
-              // <li key={member._id} className="list-group-item">
-                  <Link to={`/staff/${member._id}`} className="text-decoration-none">
-                    <StaffItem key={member._id} staff={member} />
-                  </Link>
-              // </li>
-          ))}
-          </ul>
-        )
-      }
 
+      {loading && <Loader />}
+
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      {!loading && !error && staff.length === 0 && (
+        <Alert variant="warning">No staff found</Alert>
+      )}
+
+      {!loading && !error && staff.length > 0 && (
+        <ListGroup>
+          {staff.map((member) => (
+            <ListGroup.Item key={member.id} className="p-3">
+              {/* <Link to={`/staff/${member.id}`} className="text-decoration-none"> */}
+                <StaffItem staff={member} />
+              {/* </Link> */}
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
+      )}
+  
     </Container>
   );
 }

@@ -6,15 +6,9 @@ const StaffItem = ({ staff }) => {
   const staff_service = staff.service;
 
   return (
-    <Link
-      to={`/staff/${staff._id}`}
-      state={{ staff }}
-      className="text-decoration-none"
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
+    <Link to={`/staff/${staff.id}`} className="text-decoration-none" style={{ textDecoration: "none", color: "inherit" }}>
       <Card className="mb-1 shadow-sm">
         <Card.Body className="d-flex align-items-center">
-          {/* Avatar */}
           <Card.Img
             variant="top"
             src={staff.image !== "none" ? staff.image : "/default-avatar.png"} 

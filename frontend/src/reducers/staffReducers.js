@@ -14,6 +14,9 @@ import {
     STAFF_DELETE_FAIL,
     STAFF_DELETE_REQUEST,
     STAFF_DELETE_SUCCESS,
+    STAFF_DETAIL_FAIL,
+    STAFF_DETAIL_REQUEST,
+    STAFF_DETAIL_SUCCESS,
     STAFF_LIST_FAIL,
     STAFF_LIST_REQUEST,
     STAFF_LIST_SUCCESS,
@@ -173,6 +176,30 @@ export const serviceDeleteReducer = (state = {}, action) => {
             return {
                 loading: false,
                 error: action.payload
+            };
+        default:
+            return state;
+    }
+}
+
+export const staffDetailReducer = (state={},action) => {
+    switch(action.type){
+        case STAFF_DETAIL_REQUEST:
+            return {
+                loading: true,
+                error: false,
+            };
+        case STAFF_DETAIL_SUCCESS:
+            return {
+                loading:false,
+                error: false,
+                success: true,
+                staff_detail: action.payload,
+            };
+        case STAFF_DETAIL_FAIL:
+            return {
+                loading: false,
+                error: action.payload,
             };
         default:
             return state;
