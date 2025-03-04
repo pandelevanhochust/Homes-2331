@@ -9,9 +9,9 @@ router.route("/")
     .post(checkAuth,createStaff)
 
 router.route("/update")
-    .put(checkAuth,updateStaff)
+    
 
-router.route("/service")
+router.route("/service/:id")
     .put(checkAuth,updateService)
     .delete(checkAuth,deleteService)
     .post(checkAuth,createService)
@@ -21,6 +21,7 @@ router.route("/service")
 
 router.route("/:id")
     .get(checkAuth,getStaffDetail)
+    .put(checkAuth,updateStaff)
 //     .put(updateStaff)
 //     .delete(deleteStaff);
 

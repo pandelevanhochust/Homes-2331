@@ -102,7 +102,7 @@ export const updateStaff = (staff) => async (dispatch,getState) =>{
         
         const {adminLogin: {userInfo},} = getState();
 
-        const respone = await fetch("/api/staff/update",{
+        const respone = await fetch(`/api/staff/${staff.id}`,{
             method: "PUT",
             headers: {  
                 "Content-Type": "application/json",
@@ -118,7 +118,6 @@ export const updateStaff = (staff) => async (dispatch,getState) =>{
             type: STAFF_UPDATE_SUCCESS,
             payload: data.updatedRow,
         })
-        
     }catch(error){
         dispatch({
             type: STAFF_UPDATE_FAIL,
@@ -162,26 +161,25 @@ export const deleteStaff = (staff) => async (dispatch,getState) =>{
     }
 }
 
-export const updateService = (name,service) => async (dispatch,getState) => {
+export const updateService = (service) => async (dispatch,getState) => {
     try{
+        console.log(service);
         dispatch({
             type:SERVICE_UPDATE_REQUEST,
         });
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch("/api/staff/service",{
+        const response = await fetch(`/api/staff/service/${service.id}`,{
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify({name,service}),
+            body: JSON.stringify(service),
         })
 
         const data = await response.json();
-        // console.log(data);
-
         dispatch({
             type: SERVICE_UPDATE_SUCCESS,
             payload: data,
@@ -205,7 +203,7 @@ export const deleteService = (service) => async (dispatch,getState) => {
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch("/api/staff/service",{
+        const response = await fetch(`/api/staff/service/${service.id}`,{
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -230,8 +228,8 @@ export const deleteService = (service) => async (dispatch,getState) => {
     }
 }
 
-export const createService = (name,service) => async (dispatch,getState) => {
-    console.log("Service creating:",name, service);
+export const createService = (id,service) => async (dispatch,getState) => {
+    console.log("Service creating:",id, service);
     try{
         dispatch({
             type:SERVICE_CREATE_REQUEST,
@@ -239,13 +237,13 @@ export const createService = (name,service) => async (dispatch,getState) => {
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch("/api/staff/service",{
+        const response = await fetch(`/api/staff/service/${id}`,{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify({name,service}),
+            body: JSON.stringify(service),
         })
 
         const data = await response.json();
