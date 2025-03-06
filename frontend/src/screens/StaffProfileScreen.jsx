@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Button, Card, Form, ListGroup } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { createService, deleteService, getStaffDetail, updateService, updateStaff } from "../actions/staffAction";
+import { equipmentDebtMap } from "../../../backend/db/EquipmentDebt";
+import { createService, deleteService, updateService } from "../actions/serviceAction";
+import { getStaffDetail, updateStaff } from "../actions/staffAction";
 import Loader from "../component/Loader";
 import ServiceItem from "../component/ServiceItem";
 
@@ -12,24 +14,42 @@ function StaffProfileScreen() {
 
   // Fetching staff details from Redux state
   const { loading, success, error, staff_detail } = useSelector((state) => state.staffDetail);
-
   const [editBasicInfo, setEditBasicInfo] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("edit");
   const [staffData, setStaffData] = useState({});
   const [services, setServices] = useState([]);
+  // Equipment
+  const [equipment,setEquipment] = useState([]);
+  const [addEquipment,setAddEquipment] = useState(false);
+  const [selectedEquipment,setSelectedEquipment] = useState("");
+  const [otherEquipmentPrice,setOtherEquipmentPrice] = useState("");
+  const [equipmentDebt,setEquipmentDebt] = useState(0);
 
-  // Fetch staff details
+  // Fetch staff details - Initial services - Calculate total debt
   useEffect(() => {
     dispatch(getStaffDetail(id));
-  }, [dispatch, id]);
 
-  // Sync state when new staff data is available
+  }, [dispatch, id])
+
   useEffect(() => {
+
     if (staff_detail) {
       setStaffData({ ...staff_detail });
       setServices(staff_detail.service.map((service) => ({ ...service, editMode: false })));
+
+      if(staff_detail.equipment){
+        setEquipment(staff_detail.equipment.split(",").map(item => item.trim()));
+      };
+
+      setEquipmentDebt(staff_detail.equipmentDebt);
+      // const totalDebt = equipment.reduce((init,equip) => {
+      //   return init + (equipmentDebtMap.get(equip) ?? 0)
+      // })
+      // setEquipmentDebt(totalDebt + staff_detail.equipmentDebt);
     }
-  }, [staff_detail]);
+  },[staff_detail]);
+
+  console.log(staff_detail);
 
   // Handle Basic Info Changes
   const handleChange = (e) => {
@@ -79,6 +99,24 @@ function StaffProfileScreen() {
     setAddOrEdit("add");
   };
 
+  const addEquipmentHandler = () => {
+    if(selectedEquipment !== "Select equipment" && selectedEquipment !== "Others"){
+      const updatedEquipment = [...equipment, selectedEquipment];
+      console.log("reach here",updatedEquipment);
+      setEquipment(updatedEquipment);
+
+      const updatedEquipmentString = equipment.join(",");
+      setStaffData((prev) => ({...prev,[equipment]: updatedEquipmentString,[equipmentDebt]: equipmentDebt}));
+      console.log("Adding equipment",staffData);
+      dispatch(updateStaff({ ...staffData, equipment: updatedEquipmentString, equipmentDebt }));
+      setAddEquipment(!addEquipment);
+      setSelectedEquipment("");
+    } else if(selectedEquipment === "Others"){
+      setAddEquipment(!addEquipment);
+      setSelectedEquipment("");
+    }
+  };
+
   if (loading) {
     return (
       <Loader/>
@@ -91,7 +129,7 @@ function StaffProfileScreen() {
 
   return (
     <Card
-    className="shadow-lg p-4 d-flex flex-column justify-content-center align-items-center w-100 h-100"
+    className="shadow-lg p-4 d-flex flex-column justify-content-center align-items-center w-100 h-100 mb-5"
     style={{ minHeight: "100vh", maxWidth: "100vw" }}
   >
     {/* Profile Image */}
@@ -123,6 +161,7 @@ function StaffProfileScreen() {
   
       {/* Basic Info Section */}
       <ListGroup variant="flush" className="mb-3 text-start">
+
         <ListGroup.Item className="d-flex gap-3">
           {/* Name Field */}
           <div className="flex-grow-1">
@@ -149,24 +188,6 @@ function StaffProfileScreen() {
         </ListGroup.Item>
   
         <ListGroup.Item>
-          <strong>Equipment:</strong>{" "}
-          {editBasicInfo ? (
-            <Form.Control type="text" name="equipment" value={staffData.equipment} onChange={handleChange} />
-          ) : (
-            staffData.equipment || "N/A"
-          )}
-        </ListGroup.Item>
-  
-        <ListGroup.Item>
-          <strong>Equipment Debt:</strong>{" "}
-          {editBasicInfo ? (
-            <Form.Control type="text" name="equipmentDebt" value={staffData.equipmentDebt} onChange={handleChange} />
-          ) : (
-            staffData.equipmentDebt || "N/A"
-          )}
-        </ListGroup.Item>
-  
-        <ListGroup.Item>
           <strong>Note:</strong>{" "}
           {editBasicInfo ? (
             <Form.Control type="text" name="note" value={staffData.note} onChange={handleChange} />
@@ -180,13 +201,13 @@ function StaffProfileScreen() {
   
       {/* Services Section */}
       <div className="d-flex justify-content-between align-items-center">
-        <h5>Services</h5>
+        <h4>Services</h4>
         <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
           ➕ Add
         </Button>
       </div>
   
-      <ListGroup variant="flush">
+      <ListGroup variant="flush" className="m-3">
         {services.map((service, index) => (
           <ServiceItem
             key={index}
@@ -199,6 +220,83 @@ function StaffProfileScreen() {
           />
         ))}
       </ListGroup>
+      
+      <hr />
+      <h4>Audit</h4>
+      <div className="d-flex justify-content-between align-items-center">
+        <h5 className="ms-3 mt-3"> Equipment: </h5>
+
+      </div>
+
+      {(equipment.length > 0) && equipment.map((equip,index) => (
+        <ListGroup.Item key={index} className="ms-5 mb-2 d-flex gap-3"> 
+          <div className="col-6">
+            <strong>{equip}</strong>
+          </div>
+
+          <div className="col-6 text-start">
+            Debt: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebtMap.get(equip) ?? 0)}
+          </div>     
+        </ListGroup.Item>
+      ))}
+
+      {!addEquipment &&
+      <Button className="ms-4" style={{ background: "none", border: "none", color: "gray" }} onClick={() => setAddEquipment(!addEquipment)}>
+          ➕ Add
+      </Button> }
+
+      {addEquipment && 
+        <div className="d-flex align-items-center gap-2 ms-5 w-100 mt-3">
+          <Form.Select className="w-25" onChange={(e) => setSelectedEquipment(e.target.value)}>
+            <option value="">Select Equipment</option>
+            <option value="Camera">Camera</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Mic">Mic</option>
+            <option value="Lighting">Lighting</option>
+            <option value="Others">Others</option>
+          </Form.Select>
+
+        {selectedEquipment === "Others" && (
+          <div className="d-flex align-items-center gap-2 w-50">
+            <Form.Control
+              type="text"
+              className="w-40"
+              onChange={(e) => setSelectedEquipment(e.target.value)}
+              placeholder="Enter custom equipment"
+            />
+            <Form.Control
+              type="text"
+              className="w-35"
+              // value = {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(parseInt(`${otherEquipmentPrice}000`))}
+              onChange={(e) => setOtherEquipmentPrice(e.target.value)}
+              placeholder="Enter price"
+            />
+          </div>
+        )}
+
+        <Button variant="info" className="w-10" size="sm" onClick={addEquipmentHandler}>
+          Save
+        </Button>
+        <Button variant="light" className="w-10" size="sm" onClick={() => setAddEquipment(!addEquipment)}>
+          ✖️
+        </Button>
+      </div>
+      }
+
+      <hr/>
+      <div className="mt-3">
+        <div className="d-flex gap-4" >
+          <h5>Equipment Debt:</h5> 
+          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
+        </div>
+
+        <div className="d-flex gap-4" >
+         <h5>Total Debt:</h5> 
+         <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt + (parseInt(otherEquipmentPrice) || 0))}</p>
+        </div>
+      </div>
+
+
     </Card.Body>
   </Card>
   
