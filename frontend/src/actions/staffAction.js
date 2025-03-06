@@ -86,6 +86,7 @@ export const listStaff = () => async (dispatch) => {
 }
 
 export const updateStaff = (staff) => async (dispatch,getState) =>{
+    console.log("recieved body: ",staff);
     try{
         dispatch({
             type: STAFF_UPDATE_REQUEST,

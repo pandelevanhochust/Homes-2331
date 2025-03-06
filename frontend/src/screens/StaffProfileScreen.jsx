@@ -28,7 +28,6 @@ function StaffProfileScreen() {
   // Fetch staff details - Initial services - Calculate total debt
   useEffect(() => {
     dispatch(getStaffDetail(id));
-
   }, [dispatch, id])
 
   useEffect(() => {
@@ -40,8 +39,8 @@ function StaffProfileScreen() {
       if(staff_detail.equipment){
         setEquipment(staff_detail.equipment.split(",").map(item => item.trim()));
       };
-
-      setEquipmentDebt(staff_detail.equipmentDebt);
+      
+      setEquipmentDebt(parseInt(staff_detail.equipmentDebt));
       // const totalDebt = equipment.reduce((init,equip) => {
       //   return init + (equipmentDebtMap.get(equip) ?? 0)
       // })
@@ -100,16 +99,28 @@ function StaffProfileScreen() {
   };
 
   const addEquipmentHandler = () => {
-    if(selectedEquipment !== "Select equipment" && selectedEquipment !== "Others"){
-      const updatedEquipment = [...equipment, selectedEquipment];
-      console.log("reach here",updatedEquipment);
-      setEquipment(updatedEquipment);
+    if (selectedEquipment !== "Select equipment" && selectedEquipment !== "Others") {
+      const currentDebt = equipmentDebt + parseInt(equipmentDebtMap.get(selectedEquipment) ?? 0)
+      console.log("reach here",currentDebt);      
+      setEquipmentDebt(currentDebt);
+      console.log("reach here",equipmentDebt);
 
-      const updatedEquipmentString = equipment.join(",");
-      setStaffData((prev) => ({...prev,[equipment]: updatedEquipmentString,[equipmentDebt]: equipmentDebt}));
-      console.log("Adding equipment",staffData);
-      dispatch(updateStaff({ ...staffData, equipment: updatedEquipmentString, equipmentDebt }));
-      setAddEquipment(!addEquipment);
+      const updatedEquipment = [...equipment, selectedEquipment];
+      setEquipment(updatedEquipment);
+      const updatedEquipmentString = updatedEquipment.join(", ");
+
+      setStaffData((prev) => ({
+        ...prev,
+        equipment: updatedEquipmentString, 
+        equipmentDebt: equipmentDebt, 
+      }));
+  
+      dispatch(updateStaff({
+        ...staffData,
+        equipment: updatedEquipmentString,
+        equipmentDebt: equipmentDebt,
+      }));
+      setAddEquipment(false);
       setSelectedEquipment("");
     } else if(selectedEquipment === "Others"){
       setAddEquipment(!addEquipment);
@@ -292,7 +303,7 @@ function StaffProfileScreen() {
 
         <div className="d-flex gap-4" >
          <h5>Total Debt:</h5> 
-         <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt + (parseInt(otherEquipmentPrice) || 0))}</p>
+         {/* <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt + (parseInt(otherEquipmentPrice) || 0))}</p> */}
         </div>
       </div>
 
