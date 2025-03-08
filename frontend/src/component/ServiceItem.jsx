@@ -15,11 +15,7 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
                 onChange={(e) => handleChange(index, "service", e.target.value)}
               >
                 <option value="">Select a service</option>
-                <option value="sm">Sm</option>
-                <option value="Sakura">Sakura</option>
-                <option value="Imlive">Imlive</option>
-                <option value="Chat">Chat</option>
-                <option value="Many vid">Many vid</option>
+                
               </Form.Select>
             ) : (
               service.service
