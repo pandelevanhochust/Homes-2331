@@ -1,4 +1,5 @@
 import express from "express";
+import { auditService } from "../controller/auditController.js";
 import { createService, deleteService, updateService } from "../controller/serviceController.js";
 import { createStaff, getStaffDetail, listStaff, updateStaff } from "../controller/staffController.js";
 import { checkAuth } from "../middleware/authMiddleware.js";
@@ -26,7 +27,11 @@ router.route("/service/:id")
 router.route("/:id")
     .get(checkAuth,getStaffDetail)
     .put(checkAuth,updateStaff)
-//     .put(updateStaff)
+
+router.route("/audit/:id")
+    .post(checkAuth,auditService)
+
+//     .put(updateStaff);   
 //     .delete(deleteStaff);
 
 export default router;

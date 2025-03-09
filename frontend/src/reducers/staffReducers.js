@@ -1,4 +1,7 @@
 import {
+    SERVICE_AUDIT_FAIL,
+    SERVICE_AUDIT_REQUEST,
+    SERVICE_AUDIT_SUCCESS,
     SERVICE_CREATE_FAIL,
     SERVICE_CREATE_REQUEST,
     SERVICE_CREATE_SUCCESS,
@@ -22,7 +25,7 @@ import {
     STAFF_LIST_SUCCESS,
     STAFF_UPDATE_FAIL,
     STAFF_UPDATE_REQUEST,
-    STAFF_UPDATE_SUCCESS
+    STAFF_UPDATE_SUCCESS,
 } from "../constants/staffConstant";
 
 export const staffCreateReducer = (state={},action) => {
@@ -197,6 +200,30 @@ export const staffDetailReducer = (state={},action) => {
                 staff_detail: action.payload,
             };
         case STAFF_DETAIL_FAIL:
+            return {
+                loading: false,
+                error: action.payload,
+            };
+        default:
+            return state;
+    }
+}
+
+export const serviceAuditReducer = (state={},action) => {
+    switch(action.type){
+        case SERVICE_AUDIT_REQUEST:
+            return {
+                loading: true,
+                error: false,
+            };
+        case SERVICE_AUDIT_SUCCESS:
+            return {
+                loading:false,
+                error: false,
+                success: true,
+                staff_detail: action.payload,
+            };
+        case SERVICE_AUDIT_FAIL:
             return {
                 loading: false,
                 error: action.payload,

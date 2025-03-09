@@ -13,7 +13,7 @@ const StaffItem = ({ staff }) => {
             variant="top"
             src={staff.image !== "none" ? staff.image : "/default-avatar.png"} 
             alt={staff.name}
-            className="rounded-circle me-3"
+            className="rounded-circle me-5"
             style={{ width: "50px", height: "50px", objectFit: "cover" }}
           />
           {/* Staff Info */}

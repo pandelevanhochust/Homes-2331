@@ -11,9 +11,10 @@ const STAFF_SHEET = process.env.STAFF_SHEET;
 const ADMIN_SHEET = process.env.ADMIN_SHEET;
 const SERVICE_SHEET = process.env.SERVICE_SHEET;
 
-let doc;
 
-const connectGoogleSheet = async (doc) => {
+const connectGoogleSheet = async (sheetID) => {
+    let doc;
+
     if (!doc) {
         const serviceAccountAuth = new JWT({
             email: CLIENT_EMAIL,
@@ -21,7 +22,7 @@ const connectGoogleSheet = async (doc) => {
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
 
-        doc = new GoogleSpreadsheet(SHEET_ID, serviceAccountAuth);
+        doc = new GoogleSpreadsheet(sheetID, serviceAccountAuth);
         await doc.loadInfo();
     }
     return doc;

@@ -6,6 +6,8 @@ import token from '../Token.js';
 dotenv.config();
 
 const ADMIN_SHEET = process.env.ADMIN_SHEET;
+const SHEET_ID = process.env.SHEET_ID;
+
 
 // let doc
 
@@ -15,7 +17,7 @@ export const loginAdmin = AsyncHandler( async(req,res) => {
     try{
         console.log("Recieved body:",req.body);
 
-        const doc = await connectGoogleSheet();
+        const doc = await connectGoogleSheet(SHEET_ID);
         const admin_sheet = doc.sheetsByTitle[ADMIN_SHEET];
 
         const {username, password} = req.body;

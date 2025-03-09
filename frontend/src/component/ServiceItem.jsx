@@ -1,96 +1,142 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Form, ListGroup } from 'react-bootstrap';
-    
+import { useDispatch } from 'react-redux';
+import { auditService } from '../actions/auditAction';
+
 const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, handleRemove }) => {
-    return (
-      <ListGroup.Item className="text-start m-2">
-        <div className="d-flex justify-content-between align-items-start">
-          {/* Left Side */}
-          <div className="w-50">
-            <strong>Service:</strong>{" "}
-            {service.editMode ? (
-              <Form.Select
-                value={service.service}
-                required
-                onChange={(e) => handleChange(index, "service", e.target.value)}
-              >
-                <option value="">Select a service</option>
-                <option value="sm">Sm</option>
-                <option value="Sakura">Sakura</option>
-                <option value="Imlive">Imlive</option>
-                <option value="Chat">Chat</option>
-                <option value="Many vid">Many vid</option>
-              </Form.Select>
-            ) : (
-              service.service
-            )}
-            <br />
+  const dispatch = useDispatch();
 
-            {/* Username & Password */}
-            <div className="mb-3 text-start">
-              <div>
-                <strong>Username:</strong>{" "}
-                {service.editMode ? (
-                  <Form.Control
-                    type="text"
-                    value={service.username}
-                    onChange={(e) => handleChange(index, "username", e.target.value)}
-                  />
-                ) : (
-                  service.username
-                )}
-              </div>
-              <div>
-                <strong>Password:</strong>{" "}
-                {service.editMode ? (
-                  <Form.Control
-                    type="text"
-                    value={service.password}
-                    onChange={(e) => handleChange(index, "password", e.target.value)}
-                  />
-                ) : (
-                  service.password
-                )}
-              </div>
+  const [toggleAudit, setToggleAudit] = useState(false);
+  const [revenue,setRevenue] = useState(0);
+  const AuditServiceHandler = () => {
+    if(revenue === 0 || revenue ==="" || !revenue){
+      setToggleAudit(false);
+    }else{
+      dispatch(auditService(service,revenue));
+      setToggleAudit(false);  
+    }
+  };
+
+  return (
+    <ListGroup.Item className="text-start m-2">
+      <div className="d-flex justify-content-between align-items-start mb-4">
+        {/* Left Side (Service Details) */}
+        <div className="w-50">
+          <strong>Service:</strong>{" "}
+          {service.editMode ? (
+            <Form.Select
+              value={service.service}
+              required
+              onChange={(e) => handleChange(index, "service", e.target.value)}
+            >
+              <option value="">Select a service</option>
+              <option value=""></option>
+              <option value=""></option>
+              <option value=""></option>
+              <option value=""></option>
+              <option value=""></option>
+            </Form.Select>
+          ) : (
+            service.service
+          )}
+          <br />
+
+          {/* Username & Password */}
+          <div className="text-start">
+            <div>
+              <strong>Username:</strong>{" "}
+              {service.editMode ? (
+                <Form.Control
+                  type="text"
+                  value={service.username}
+                  onChange={(e) => handleChange(index, "username", e.target.value)}
+                />
+              ) : (
+                service.username
+              )}
             </div>
-          </div>
-
-          {/* Right Side */}
-          <div className="w-50 text-start">
-            <strong>Income:</strong>{" "}
-            {service.editMode ? (
-              <Form.Control
-                type="number"
-                value={service.income}
-                required
-                onChange={(e) => handleChange(index, "income", e.target.value)}
-              />
-            ) : (
-              service.income
-            )}
+            <div>
+              <strong>Password:</strong>{" "}
+              {service.editMode ? (
+                <Form.Control
+                  type="text"
+                  value={service.password}
+                  onChange={(e) => handleChange(index, "password", e.target.value)}
+                />
+              ) : (
+                service.password
+              )}
+            </div>
           </div>
         </div>
 
-          {/* Button */}
-        <div>
-          {service.editMode ? (
-            <div className="d-flex gap-2 mt-3">
-              <Button variant="success" size="sm" onClick={() => handleSave(index)}>
-                Save
-              </Button>
-              <Button variant="danger" size="sm" onClick={() => handleRemove(index)}>
-                🗑 Remove
-              </Button>
-            </div>
-          ) : (
-            <Button variant="info" size="sm" className="mt-2" onClick={() => toggleEdit(index)}>
-              Edit
-            </Button>
+        {/* Right Side (Revenue) */}
+        <div className="ms-4 w-90 text-start d-flex align-items-center gap-2">
+          <strong>Revenue:</strong>{" "}
+          {toggleAudit && (
+            <Form.Control
+              className="w-20"
+              type="number"
+              onChange={(e) => setRevenue(e.target.value)}
+            />
           )}
         </div>
 
-      </ListGroup.Item>
-    );
-  };
-  
-export default ServiceItem
+        {/* Action Buttons */}
+        <div className="d-flex flex-column align-items-center gap-2">
+          {service.editMode ? (
+            <div className="d-flex flex-column gap-2">
+              <Button variant="success" size="sm" className="w-auto px-2" onClick={() => handleSave(index)}>
+                Add
+              </Button>
+              <Button variant="danger" size="sm" className="w-auto px-2" onClick={() => handleRemove(index)}>
+                Remove
+              </Button>
+              <Button variant="secondary" size="sm" className="w-auto px-2" onClick={() => toggleEdit(index)}>
+                Cancel
+              </Button>
+            </div>
+          ) : toggleAudit ? (
+            <div className="d-flex flex-column gap-2">
+              <Button variant="primary" size="sm" className="w-auto px-2" onClick={() => AuditServiceHandler(service,revenue)} >
+                Account
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                className="w-auto px-2"
+                onClick={() => setToggleAudit(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="d-flex flex-column gap-2">
+              <Button
+                variant="warning"
+                size="sm"
+                className="w-auto px-2"
+                onClick={() => {
+                  setToggleAudit(true);
+                }}
+              >
+                Audit
+              </Button>
+              <Button
+                variant="info"
+                size="sm"
+                className="w-auto px-2"
+                onClick={() => toggleEdit(index)}
+              >
+                Edit
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </ListGroup.Item>
+  );
+};
+
+export default ServiceItem;

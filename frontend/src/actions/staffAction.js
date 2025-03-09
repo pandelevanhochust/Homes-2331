@@ -166,7 +166,12 @@ export const getStaffDetail = (id) => async(dispatch,getState) =>{
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-        })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Failed with status: ${response.status}`);
+        };
 
         const data = await response.json();
         dispatch({

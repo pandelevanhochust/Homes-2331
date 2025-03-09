@@ -71,8 +71,12 @@ function StaffProfileScreen() {
   // Save or Add a Service
   const updateServiceHandler = (index) => {
     if (addOrEdit === "add") {
-      dispatch(createService(id,services[services.length - 1]));
-      setAddOrEdit("edit");
+      try{
+        dispatch(createService(id,services[services.length - 1]));
+        setAddOrEdit("edit");  
+      }catch(err){
+        dispatch(deleteService(services[index]));
+      }
     } else {
       dispatch(updateService(services[index]));
     }
@@ -298,6 +302,11 @@ function StaffProfileScreen() {
       <div className="mt-3">
         <div className="d-flex gap-4" >
           <h5>Equipment Debt:</h5> 
+          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
+        </div>
+
+        <div className="d-flex gap-4" >
+          <h5>Location:</h5> 
           <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
         </div>
 

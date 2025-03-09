@@ -9,13 +9,15 @@ dotenv.config();
 const STAFF_SHEET = process.env.STAFF_SHEET;
 const ADMIN_SHEET = process.env.ADMIN_SHEET;
 const SERVICE_SHEET = process.env.SERVICE_SHEET;
+const SHEET_ID = process.env.SHEET_ID;
+
 
 // let doc;
 
 // GET api/staff/       
 export const listStaff = AsyncHandler(async (req, res) => { 
     try {
-        const doc = await connectGoogleSheet();
+        const doc = await connectGoogleSheet(SHEET_ID);
         // connect two sheets
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
         const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
@@ -75,7 +77,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields: name and role are required' });
         }
 
-        const doc = await connectGoogleSheet();
+        const doc = await connectGoogleSheet(SHEET_ID);
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
         const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
         const adminSheet = doc.sheetsByTitle[ADMIN_SHEET];
@@ -124,7 +126,7 @@ export const updateStaff = AsyncHandler(async (req, res) => {
         const {id} = req.params;
 
         // Connect to Google Sheet
-        const doc = await connectGoogleSheet();
+        const doc = await connectGoogleSheet(SHEET_ID);
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
         const rows = await staffSheet.getRows();
         const staffRowIndex = rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id));
@@ -185,7 +187,7 @@ export const getStaffDetail = AsyncHandler(async(req,res) => {
     try{
         const {id} = req.params;
 
-        const doc = await connectGoogleSheet();
+        const doc = await connectGoogleSheet(SHEET_ID);
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
         const serviceSheet = doc.sheetsByTitle[SERVICE_SHEET];
 

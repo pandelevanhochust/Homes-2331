@@ -12,7 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: "http://localhost:3000", // Chỉ định frontend
+    origin: "http://localhost:3000",
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization"
 }));
@@ -24,6 +24,9 @@ if (process.env.NODE_ENV === "development" ){
 app.use(express.json());
 app.use("/api/staff",staffRoutes);
 app.use("/api/admin",adminRoutes);
+// app.use("api/drive").post((req,res) => {
+    
+// })
 
 
 app.use(notFound);

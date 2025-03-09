@@ -4,6 +4,7 @@ import { thunk } from 'redux-thunk';
 import { adminLoginReducer } from './reducers/adminReducers';
 
 import {
+    serviceAuditReducer,
     serviceCreateReducer,
     serviceDeleteReducer,
     serviceUpdateReducer,
@@ -11,7 +12,7 @@ import {
     staffDeleteReducer,
     staffDetailReducer,
     staffListReducer,
-    staffUpdateReducer,
+    staffUpdateReducer
 } from './reducers/staffReducers';
 
 const root = combineReducers({
@@ -24,6 +25,7 @@ const root = combineReducers({
     serviceDelete: serviceDeleteReducer,
     serviceUpdate: serviceUpdateReducer,
     staffDetail: staffDetailReducer,
+    serviceAudit: serviceAuditReducer,
 });
 
 console.log(localStorage.getItem("userInfo"));
