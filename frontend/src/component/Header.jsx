@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, Container, Nav, Navbar } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar, NavItem } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import getCurrentWeekTimeframe from '../../../backend/db/dateConfig';
 import { logoutAdmin } from '../actions/adminAction';
 
 function Header() {
@@ -24,6 +25,7 @@ function Header() {
         <Nav className="ms-auto d-flex flex-row gap-3 align-items-center">
           {userInfo ? (
             <>
+              <NavItem>{getCurrentWeekTimeframe()}</NavItem>
               <Nav.Link as={Link} to="/addstaff">Add Staff</Nav.Link>
               <Nav.Link as={Link} to="/addmin/${userInfo._id}"> {userInfo.name || "User"}</Nav.Link>
               <Nav.Link onClick={handleLogout} style={{ cursor: "pointer", color: "white" }}>

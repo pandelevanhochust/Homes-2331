@@ -22,13 +22,18 @@ export const auditService = (service,revenue) => async(dispatch,getState) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            // body: JSON.stringify({service,revenue}),
+            body: JSON.stringify({service,revenue}),
         })
 
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || `Failed with status: ${response.status}`);
         }
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Failed with status: ${response.status}`);
+        };
 
         const data = await response.json();
         console.log(data);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Form, ListGroup } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
+import getCurrentWeekTimeframe from '../../../backend/db/dateConfig';
 import { auditService } from '../actions/auditAction';
 
 const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, handleRemove }) => {
@@ -41,7 +42,6 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
           )}
           <br />
 
-          {/* Username & Password */}
           <div className="text-start">
             <div>
               <strong>Username:</strong>{" "}
@@ -70,7 +70,6 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
           </div>
         </div>
 
-        {/* Right Side (Revenue) */}
         <div className="ms-4 w-90 text-start d-flex align-items-center gap-2">
           <strong>Revenue:</strong>{" "}
           {toggleAudit && (
@@ -82,7 +81,10 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
           )}
         </div>
 
-        {/* Action Buttons */}
+        <div>
+        <strong> {getCurrentWeekTimeframe()} </strong>
+        </div>
+
         <div className="d-flex flex-column align-items-center gap-2">
           {service.editMode ? (
             <div className="d-flex flex-column gap-2">

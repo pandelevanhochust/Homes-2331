@@ -105,9 +105,9 @@ export const createSheetinFolder = async(folderId,sheetTitle) => {
         await new Promise((resolve) => setTimeout(resolve, 10000)); 
 
         const doc = await connectGoogleSheet(sheetID);
-        const auditSheet = doc.sheetsByIndex[0];
+        // const auditSheet = doc.sheetsByIndex[0];
 
-        await auditSheet.setHeaderRow(["ID","Name","Income", "Service", "", "", "", "Percentage", "Total", "Note"]);
+        await doc.sheetsByIndex[0].setHeaderRow(["ID","Name","Income", "Service", "", "", "", "Percentage", "Total", "Note"]);
 
         console.log("reach here");
         console.log(`Initial data added to Sheet: ${sheetTitle}`);

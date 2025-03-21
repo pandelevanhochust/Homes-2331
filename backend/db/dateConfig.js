@@ -13,7 +13,7 @@ const getCurrentWeekTimeframe = () => {
     const formatDate = (date) =>
         `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`; // Month is 0-indexed, so +1
 
-    return `income_${formatDate(firstDay)}-${formatDate(lastDay)}`;
+    return `${formatDate(firstDay)}-${formatDate(lastDay)}`;
 };
 
 export default getCurrentWeekTimeframe;
