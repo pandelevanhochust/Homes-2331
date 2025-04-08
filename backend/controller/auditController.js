@@ -177,13 +177,13 @@ export const getAuditService = AsyncHandler(async (req, res) => {
     }
 
     // Prepare clean object (avoid circular structure)
-    const cleanData = {};
+    const auditData = {};
     sheet.headerValues.forEach((header, index) => {
-      cleanData[header] = data._rawData[index];
+      auditData[header] = data._rawData[index];
     });
 
-    console.log("Here is the clean data", cleanData);
-    res.status(200).json({ auditData: cleanData });
+    console.log("Here is the clean data", auditData);
+    res.status(200).json(auditData);
   } catch (error) {
     console.error("Error getting audit data:", error);
     res.status(500).json({ message: "Failed to fetch audit data" });

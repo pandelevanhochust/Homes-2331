@@ -22,19 +22,22 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
     return `${formatDate(firstDay)}-${formatDate(lastDay)}`; };
   
   const dispatch = useDispatch();
+
+  const { auditData, loading } = useSelector((state) => state.getServiceAudit);
+
   const [toggleAudit, setToggleAudit] = useState(false);
   const [revenue, setRevenue] = useState(0);
   const [weekOffset, setWeekOffset] = useState(0);
   const [weekFrame, setWeekFrame] = useState(getCurrentWeekTimeframe(weekOffset));
 
-  const { auditData, loading } = useSelector((state) => state.getServiceAudit);
-
-  console.log(weekFrame);
-
   useEffect(() => {
+    console.log("LOOPPPPPPP");
     setWeekFrame(getCurrentWeekTimeframe(weekOffset));
     if (!service.editMode) {
       dispatch(getAuditService(service, weekOffset));
+    }
+    if(!auditData){
+      dispatch(getAuditService(service,weekOffset));
     }
     console.log("auditData",auditData);
   }, [dispatch, service, weekOffset,auditData,loading]);
@@ -56,7 +59,7 @@ const ServiceItem = ({ service, index, toggleEdit, handleSave, handleChange, han
     if (!auditData || auditData.Name !== service.name) return null;
     if (!auditData || !auditData.Total) return <i></i>;
     console.log(auditData);
-    return `Total: $${Number(auditData.revenue).toLocaleString()}`;
+    return `Total: $${Number(auditData.Total || 0).toLocaleString()}`;
   };
 
   return (

@@ -9,11 +9,13 @@ import Loader from "../component/Loader";
 import ServiceItem from "../component/ServiceItem";
 
 function StaffProfileScreen() {
+
   const dispatch = useDispatch();
   const { id } = useParams();
 
   // Fetching staff details from Redux state
   const { loading, success, error, staff_detail } = useSelector((state) => state.staffDetail);
+  const { auditData, loading } = useSelector((state) => state.getServiceAudit);
   const [editBasicInfo, setEditBasicInfo] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("edit");
   const [staffData, setStaffData] = useState({});
@@ -25,13 +27,28 @@ function StaffProfileScreen() {
   const [otherEquipmentPrice,setOtherEquipmentPrice] = useState("");
   const [equipmentDebt,setEquipmentDebt] = useState(0);
 
+  const getCurrentWeekTimeframe = (offset = 0) => {
+    const today = new Date();
+    today.setDate(today.getDate() + offset * 7); // move to target week
+
+    const dayOfWeek = today.getDay(); // 0 = Sunday, ..., 6 = Saturday
+    const firstDay = new Date(today);
+    firstDay.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Monday
+
+    const lastDay = new Date(firstDay);
+    lastDay.setDate(firstDay.getDate() + 6); // Sunday
+
+    const formatDate = (date) =>
+        `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+    return `${formatDate(firstDay)}-${formatDate(lastDay)}`; };
+
   // Fetch staff details - Initial services - Calculate total debt
   useEffect(() => {
     dispatch(getStaffDetail(id));
   }, [dispatch, id])
 
   useEffect(() => {
-
     if (staff_detail) {
       setStaffData({ ...staff_detail });
       setServices(staff_detail.service.map((service) => ({ ...service, editMode: false })));
@@ -41,10 +58,6 @@ function StaffProfileScreen() {
       };
       
       setEquipmentDebt(parseInt(staff_detail.equipmentDebt));
-      // const totalDebt = equipment.reduce((init,equip) => {
-      //   return init + (equipmentDebtMap.get(equip) ?? 0)
-      // })
-      // setEquipmentDebt(totalDebt + staff_detail.equipmentDebt);
     }
   },[staff_detail]);
 

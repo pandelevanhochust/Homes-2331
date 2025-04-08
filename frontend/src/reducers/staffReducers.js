@@ -241,7 +241,7 @@ export const getServiceAuditReducer = (state={},action) => {
         case GET_AUDIT_REQUEST:
             return { loading: true };
           case GET_AUDIT_SUCCESS:
-            return { loading: false, auditData: action.payload.auditData};
+            return { loading: false, auditData: action.payload};
           case GET_AUDIT_FAIL:
             return { loading: false, error: action.payload };
         default:

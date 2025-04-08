@@ -76,7 +76,7 @@ export const getAuditService = (service, offset = 0) => async (dispatch, getStat
       const data = await response.json();
 
       console.log("Data recieved",data);
-      dispatch({ type: GET_AUDIT_SUCCESS, payload: data });
+      dispatch({ type: GET_AUDIT_SUCCESS, payload:data});
     } catch (error) {
       dispatch({
         type: GET_AUDIT_FAIL,
