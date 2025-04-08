@@ -3,10 +3,12 @@ import { Button, Card, Form, ListGroup } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { equipmentDebtMap } from "../../../backend/db/EquipmentDebt";
+import { getAuditService } from "../actions/auditAction";
 import { createService, deleteService, updateService } from "../actions/serviceAction";
 import { getStaffDetail, updateStaff } from "../actions/staffAction";
 import Loader from "../component/Loader";
 import ServiceItem from "../component/ServiceItem";
+import { SERVICE_CREATE_RESET, SERVICE_DELETE_RESET, SERVICE_UPDATE_RESET, STAFF_DETAIL_RESET } from "../constants/staffConstant";
 
 function StaffProfileScreen() {
 
@@ -14,12 +16,17 @@ function StaffProfileScreen() {
   const { id } = useParams();
 
   // Fetching staff details from Redux state
-  const { loading, success, error, staff_detail } = useSelector((state) => state.staffDetail);
-  const { auditData, loading } = useSelector((state) => state.getServiceAudit);
+  const { loading, success: staffDetailSuccess, error, staff_detail } = useSelector((state) => state.staffDetail);
+  const { loading: createLoading, success: createSuccess} = useSelector((state) => state.serviceCreate);
+  const { loading: updateLoading, success: updateSuccess} = useSelector((state) => state.serviceUpdate);
+  const { loading: deleteLoading, success: deleteSuccess} = useSelector((state) => state.serviceDelete);
+  const { auditData } = useSelector((state) => state.getServiceAudit);
+
   const [editBasicInfo, setEditBasicInfo] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("edit");
   const [staffData, setStaffData] = useState({});
   const [services, setServices] = useState([]);
+  const [services_name,setServicesName] = useState([]);
   // Equipment
   const [equipment,setEquipment] = useState([]);
   const [addEquipment,setAddEquipment] = useState(false);
@@ -27,6 +34,7 @@ function StaffProfileScreen() {
   const [otherEquipmentPrice,setOtherEquipmentPrice] = useState("");
   const [equipmentDebt,setEquipmentDebt] = useState(0);
 
+  //Audit
   const getCurrentWeekTimeframe = (offset = 0) => {
     const today = new Date();
     today.setDate(today.getDate() + offset * 7); // move to target week
@@ -43,26 +51,83 @@ function StaffProfileScreen() {
 
     return `${formatDate(firstDay)}-${formatDate(lastDay)}`; };
 
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [weekFrame, setWeekFrame] = useState(getCurrentWeekTimeframe(weekOffset));
+  const [auditMap, setAuditMap] = useState({});
+
   // Fetch staff details - Initial services - Calculate total debt
   useEffect(() => {
     dispatch(getStaffDetail(id));
-  }, [dispatch, id])
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (createSuccess || updateSuccess || deleteSuccess) {
+      dispatch(getStaffDetail(id));
+      if(staffDetailSuccess){
+        dispatch({ type: SERVICE_CREATE_RESET });
+        dispatch({ type: SERVICE_UPDATE_RESET });
+        dispatch({ type: SERVICE_DELETE_RESET });
+        dispatch({ type: STAFF_DETAIL_RESET});
+      }
+    }
+  }, [createSuccess, updateSuccess, deleteSuccess, staffDetailSuccess, dispatch, id]);
+  
 
   useEffect(() => {
     if (staff_detail) {
       setStaffData({ ...staff_detail });
-      setServices(staff_detail.service.map((service) => ({ ...service, editMode: false })));
+  
+      const services = staff_detail.service.map((service) => ({
+        ...service,
+        editMode: false,
+      }));
+      setServices(services);
 
-      if(staff_detail.equipment){
-        setEquipment(staff_detail.equipment.split(",").map(item => item.trim()));
-      };
-      
+      console.log("Services here",services);
+  
+      const serviceNames = services.map((srv) => srv.service);
+      setServicesName(serviceNames);
+  
+      if (staff_detail.equipment) {
+        setEquipment(staff_detail.equipment.split(",").map((item) => item.trim()));
+      }
+  
       setEquipmentDebt(parseInt(staff_detail.equipmentDebt));
     }
-  },[staff_detail]);
+    setWeekFrame(getCurrentWeekTimeframe(weekOffset));
+    if(services.length > 0 || !createLoading) {    dispatch(getAuditService(id, weekOffset));    }
+  }, [dispatch, id, staff_detail, weekOffset]);
 
+
+  useEffect(() => {
+    if (auditData && services_name.length > 0) {
+      const newAuditMap = {};
+  
+      services_name.forEach((svc) => {
+        const revenue = auditData[svc] || ""; // fallback to empty if not found
+        newAuditMap[svc] = revenue;
+      });
+  
+      setAuditMap(newAuditMap);
+    }
+  }, [auditData, services_name]);
+  
+  
   console.log(staff_detail);
   console.log(services);
+
+  //Handle Calculation
+    const computeTotalIncome = (auditMap) => {
+      return Object.values(auditMap).reduce((acc, val) => {
+        const num = parseInt(val);
+        return acc + (isNaN(num) ? 0 : num);
+      }, 0);
+    };
+
+    const totalIncome = computeTotalIncome(auditMap);
+    const totalDebt = equipmentDebt;
+    const percentDebt = totalIncome > 0 ? ((totalDebt / totalIncome) * 100).toFixed(2) : "N/A";
+
 
   // Handle Basic Info Changes
   const handleChange = (e) => {
@@ -99,10 +164,22 @@ function StaffProfileScreen() {
 
   // Toggle Edit Mode for a Service
   const toggleEditService = (index) => {
-    setServices((prev) =>
-      prev.map((service, i) => (i === index ? { ...service, editMode: !service.editMode } : service))
-    );
+    setServices((prevServices) => {
+      const service = prevServices[index];
+      const isEmpty =
+        !service.service && !service.username && !service.password;
+  
+      if (service.editMode && isEmpty && addOrEdit === "add") {
+        setAddOrEdit("edit");        
+        return prevServices.filter((_, i) => i !== index);
+      }
+  
+      return prevServices.map((srv, i) =>
+        i === index ? { ...srv, editMode: !srv.editMode } : srv
+      );
+    });
   };
+  
 
   // Remove a Service
   const removeServiceHandler = (index) => {
@@ -145,6 +222,15 @@ function StaffProfileScreen() {
       setSelectedEquipment("");
     }
   };
+
+  const updateAuditValue = (serviceName, revenue) => {
+    setAuditMap(prev => ({
+      ...prev,
+      [serviceName]: revenue
+    }));
+  };
+  
+
 
   if (loading) {
     return (
@@ -231,13 +317,24 @@ function StaffProfileScreen() {
       {/* Services Section */}
       <div className="d-flex justify-content-between align-items-center">
         <h4>Services</h4>
+
+        <div className="d-flex gap-2 mt-2">
+          <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
+            ⬅ Previous Week
+          </Button>
+          <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
+            🔁 Current
+          </Button>
+        </div>
+
         <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
           ➕ Add
         </Button>
       </div>
-  
+
       <ListGroup variant="flush" className="m-3">
-        {services.map((service, index) => (
+        {createLoading && <Loader/>}
+        {!createLoading && services.map((service, index) => (
           <ServiceItem
             key={index}
             service={service}
@@ -246,6 +343,12 @@ function StaffProfileScreen() {
             handleSave={updateServiceHandler}
             handleChange={handleServiceChange}
             handleRemove={removeServiceHandler}
+            auditValue={auditMap[service.service] || ""}
+            weekOffset={weekOffset}
+            setWeekOffset={setWeekOffset}
+            weekFrame={weekFrame}
+            auditData={auditData}
+            updateAuditValue={updateAuditValue}
           />
         ))}
       </ListGroup>
@@ -324,13 +427,21 @@ function StaffProfileScreen() {
           <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
         </div>
 
-        <div className="d-flex gap-4" >
-         <h5>Total Debt:</h5> 
-         {/* <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt + (parseInt(otherEquipmentPrice) || 0))}</p> */}
+        <div className="d-flex gap-4">
+          <h5>Percentage:</h5> 
+          <p>{percentDebt !== "N/A" ? `${percentDebt}%` : "N/A"}</p>
+        </div>
+
+        <div className="d-flex gap-4">
+          <h5>Total Income:</h5> 
+          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalIncome)}</p>
+        </div>
+
+        <div className="d-flex gap-4">
+          <h5>Total Debt:</h5> 
+          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalDebt)}</p>
         </div>
       </div>
-
-
     </Card.Body>
   </Card>
   

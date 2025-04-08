@@ -7,12 +7,15 @@ import {
     SERVICE_AUDIT_SUCCESS,
     SERVICE_CREATE_FAIL,
     SERVICE_CREATE_REQUEST,
+    SERVICE_CREATE_RESET,
     SERVICE_CREATE_SUCCESS,
     SERVICE_DELETE_FAIL,
     SERVICE_DELETE_REQUEST,
+    SERVICE_DELETE_RESET,
     SERVICE_DELETE_SUCCESS,
     SERVICE_UPDATE_FAIL,
     SERVICE_UPDATE_REQUEST,
+    SERVICE_UPDATE_RESET,
     SERVICE_UPDATE_SUCCESS,
     STAFF_CREATE_FAIL,
     STAFF_CREATE_REQUEST,
@@ -22,6 +25,7 @@ import {
     STAFF_DELETE_SUCCESS,
     STAFF_DETAIL_FAIL,
     STAFF_DETAIL_REQUEST,
+    STAFF_DETAIL_RESET,
     STAFF_DETAIL_SUCCESS,
     STAFF_LIST_FAIL,
     STAFF_LIST_REQUEST,
@@ -120,73 +124,52 @@ export const staffDeleteReducer = (state = {}, action) => {
     }
 }
 
-export const serviceUpdateReducer  = (state ={},action) =>{
-    switch(action.type){
-        case SERVICE_UPDATE_REQUEST:
-            return {
-                loading: true,
-                error: false,
-            };
-        case SERVICE_UPDATE_SUCCESS:
-            return {
-                loading: false,
-                success: true,
-                data: action.payload,
-            }
-        case SERVICE_UPDATE_FAIL:
-            return {
-                loading: false,
-                error: action.payload,
-            }
-        default:
-            return state;
+export const serviceUpdateReducer = (state = {}, action) => {
+    switch (action.type) {
+      case SERVICE_UPDATE_REQUEST:
+        return { loading: true };
+      case SERVICE_UPDATE_SUCCESS:
+        return { loading: false, success: true, data: action.payload };
+      case SERVICE_UPDATE_FAIL:
+        return { loading: false, error: action.payload };
+      case SERVICE_UPDATE_RESET:
+        return {}; // ✅ Reset state
+      default:
+        return state;
     }
-}
+  };
+  
 
-export const serviceCreateReducer = (state={},action) => {
-    switch (action.type){
-        case SERVICE_CREATE_REQUEST:
-            return {
-                loading: true,
-            };
-        case SERVICE_CREATE_SUCCESS:
-            return{
-                loading: false,
-                success: true,
-                data: action.payload,
-            };
-        case SERVICE_CREATE_FAIL:
-            return { 
-                loading: false,
-                error: action.payload,
-            };
-        default:
-            return state;
+export const serviceCreateReducer = (state = {}, action) => {
+    switch (action.type) {
+      case SERVICE_CREATE_REQUEST:
+        return { loading: true };
+      case SERVICE_CREATE_SUCCESS:
+        return { loading: false, success: true, data: action.payload };
+      case SERVICE_CREATE_FAIL:
+        return { loading: false, error: action.payload };
+      case SERVICE_CREATE_RESET:
+        return {}; // ✅ Reset state
+      default:
+        return state;
     }
-};
+  };
 
-export const serviceDeleteReducer = (state = {}, action) => {
-    switch(action.type){
-        case SERVICE_DELETE_REQUEST:
-            return {
-                loading: true,
-                error: false,
-            };
-        case SERVICE_DELETE_SUCCESS:
-            return {
-                loading:false,
-                error: false,
-                success: true,
-            };
-        case SERVICE_DELETE_FAIL:
-            return {
-                loading: false,
-                error: action.payload
-            };
-        default:
-            return state;
+
+  export const serviceDeleteReducer = (state = {}, action) => {
+    switch (action.type) {
+      case SERVICE_DELETE_REQUEST:
+        return { loading: true };
+      case SERVICE_DELETE_SUCCESS:
+        return { loading: false, success: true };
+      case SERVICE_DELETE_FAIL:
+        return { loading: false, error: action.payload };
+      case SERVICE_DELETE_RESET:
+        return {}; // ✅ Reset state
+      default:
+        return state;
     }
-}
+  };
 
 export const staffDetailReducer = (state={},action) => {
     switch(action.type){
@@ -207,6 +190,8 @@ export const staffDetailReducer = (state={},action) => {
                 loading: false,
                 error: action.payload,
             };
+        case STAFF_DETAIL_RESET:
+            return {}; // ✅ Reset state
         default:
             return state;
     }

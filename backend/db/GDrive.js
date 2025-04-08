@@ -10,6 +10,51 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const AUDIT_FOLDER = process.env.FOLDER_NAME;
 
+const STAFF_ROW_COUNT = 20;
+const RETRY_ATTEMPTS = 10;
+const RETRY_DELAY_MS = 20000;
+
+const SERVICES = ['SM', 'Chat', 'Sakura', 'Imlive'];
+
+//Align Cells
+export const centerAlignSheetCells = async (sheet) => {
+    const rowCount = 50;
+    const colCount = sheet.headerValues.length;
+  
+    await sheet.updateCells({
+      startRowIndex: 0,
+      endRowIndex: rowCount,
+      startColumnIndex: 0,
+      endColumnIndex: colCount,
+      fields: '*',
+      cellData: Array.from({ length: rowCount }, () => ({
+        values: Array.from({ length: colCount }, () => ({
+          userEnteredFormat: {
+            horizontalAlignment: 'CENTER',
+            verticalAlignment: 'MIDDLE',
+          },
+        })),
+      })),
+    });
+  };
+
+//Delay Function  
+const waitForSheetReady = async (sheetID) => {
+    for (let i = 0; i < RETRY_ATTEMPTS; i++) {
+      try {
+        const doc = await connectGoogleSheet(sheetID);
+        await doc.loadInfo();
+        return doc;
+      } catch (error) {
+        if (i === RETRY_ATTEMPTS - 1) {
+          throw new Error(`Sheet not ready after ${RETRY_ATTEMPTS} attempts: ${error.message}`);
+        }
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+    }
+  };
+  
+
 export const serviceAccountAuth = () =>
     google.drive({
         version: "v3",
@@ -80,51 +125,149 @@ export const accessAuditFolder = async () => {
 }
 
 //Create googleSheets
-export const createSheetinFolder = async (folderId, sheetTitle, services = ['SM', 'Chat', 'Sakura', 'Imlive'], rate = '24.5') => {
-    try {
-      const drive = serviceAccountAuth();
+export const createSheetinFolder = async (folderId, sheetTitle, rate = '24.5') => {
+    const drive = serviceAccountAuth();
+    let sheetID = null;
+    const zeroWidth = '\u200B'; // zero-width space
   
-      // Step 1: Create Google Sheet in Drive folder
+    try {
+      // Step 1: Create the Sheet
       const fileMetadata = {
         name: sheetTitle,
         mimeType: 'application/vnd.google-apps.spreadsheet',
         parents: [folderId],
       };
   
-      const file = await  drive.files.create({
+      const file = await drive.files.create({
         resource: fileMetadata,
         fields: 'id',
       });
   
-      const sheetID =  file.data.id;
-      console.log(`✅ Google Sheet created successfully with ID: ${sheetID}`);
+      sheetID = file.data.id;
+      console.log(`✅ Sheet created: ${sheetID}`);
   
-      // Step 2: Connect to the new sheet
-      const doc = await connectGoogleSheet(sheetID);
+      const doc = await waitForSheetReady(sheetID);
       const sheet = doc.sheetsByIndex[0];
   
-    // ✅ Step 1: Add display row at top
-    // await sheet.setHeaderRow(['Income', '', '', '', '', '', '', '', `rate: ${rate}`],1);
+      // Step 2: Set Header Row
+      const headerRow = ['Name', ...SERVICES, 'Percentage', 'Total', 'Note'];
+      await sheet.setHeaderRow(headerRow);
+  
+      // Step 3: Add 49 placeholder rows with zero-width space
+      const placeholderRow = Object.fromEntries(headerRow.map(col => [col, zeroWidth]));
+      const placeholderRows = Array(STAFF_ROW_COUNT - 1).fill(placeholderRow);
+  
+      // Step 4: Add a dump row at row 51
+      const dumpRow = Object.fromEntries(headerRow.map(col => [col, zeroWidth]));
+      dumpRow['Name'] = '__DUMP__';
+  
+      await sheet.addRows([...placeholderRows, dumpRow]);
+  
+      // Step 5: Add footer formulas
+      const startRow = STAFF_ROW_COUNT + 2; // Header + 50 rows + 1
+      const totalCol = String.fromCharCode(65 + headerRow.length - 2); // Total column
+      const noteCol = String.fromCharCode(65 + headerRow.length - 1); // Note column
+      const colRef = (index) => String.fromCharCode(66 + index); // B, C, D...
+  
+      const footerRows = [
+        {
+          Name: 'Total',
+          ...Object.fromEntries(
+            SERVICES.map((svc, i) => [
+                svc, `=TEXT(SUM(${colRef(i)}2:${colRef(i)}${STAFF_ROW_COUNT + 1}), "$#,##0.00")`])
+          ),
+          Total: `=TEXT(SUM(${totalCol}2:${totalCol}${STAFF_ROW_COUNT + 1}), "$#,##0.00")`,
+          Note: `=TEXT(
+  SUM(
+    ARRAYFORMULA(
+      VALUE(
+        SUBSTITUTE(
+          REGEXREPLACE(H2:H51; "[^0-9.,]"; "");
+          ",";
+          ""
+        )
+      )
+    )
+  );
+  "#,##0 ""đ"""
+)
 
-    // ✅ Step 2: Set proper header for audit data
-    const headerRow = ['Name', ...services, 'Percentage', 'Total', 'Note'];
-    await sheet.setHeaderRow(headerRow); // Set at row 2
+                    `
+        },
+        {
+          Name: 'Kế Toán',
+          Percentage: '1%',
+          Total: `=${totalCol}${startRow}*0.01`,
+          Note: `=${noteCol}${startRow}*0.01`,
+        },
+        {
+          Name: 'Tech',
+          Percentage: '1%',
+          Total: `=${totalCol}${startRow}*0.01`,
+          Note: `=${noteCol}${startRow}*0.01`,
+        },
+        {
+          Name: 'Trợ lý',
+          Percentage: '0%',
+          Total: `=${totalCol}${startRow}*0`,
+          Note: `=${noteCol}${startRow}*0`,
+        },
+        {
+          Name: 'Grand total',
+          Total: `=${totalCol}${startRow}+${totalCol}${startRow + 1}+${totalCol}${startRow + 2}`,
+          Note: `=${noteCol}${startRow}+${noteCol}${startRow + 1}+${noteCol}${startRow + 2}`,
+        },
+        {
+          Name: 'Boss',
+          Percentage: '10%',
+          Total: `=${totalCol}${startRow + 3}*0.1`,
+          Note: `=${noteCol}${startRow + 3}*0.1`,
+        },
+      ];
+  
+      await sheet.addRows(footerRows);
+  
+      // Step 6: Style headers & footers
+      await sheet.loadCells(`A1:${noteCol}${startRow + footerRows.length}`);
+  
+      // Style header
+      for (let col = 0; col < headerRow.length; col++) {
+        const cell = sheet.getCell(0, col);
+        cell.textFormat = { bold: true };
+        cell.horizontalAlignment = 'CENTER';
+      }
+  
+      // Style footer labels
+      for (let i = 0; i < footerRows.length; i++) {
+        const cell = sheet.getCell(startRow - 1 + i, 0);
+        cell.textFormat = { bold: true };
+      }
 
-      console.log('✅ Header and initial data row added to the sheet');
+    //   const noteColumnIndex = headerRow.indexOf('Note');
+    //     for (let i = 1; i <= startRow + footerRows.length; i++) {
+    //     const cell = sheet.getCell(i, noteColumnIndex);
+    //     cell.horizontalAlignment = 'RIGHT';
+    //     }
+  
+      // Optional: style dump row as gray
+      const dumpCell = sheet.getCell(STAFF_ROW_COUNT, 0); // A51
+      dumpCell.textFormat = { foregroundColorStyle: { rgbColor: { red: 0.6, green: 0.6, blue: 0.6 } } };
+  
+      await sheet.saveUpdatedCells();
+  
+      console.log('✅ Template created with 50 placeholder rows, footer, and styling');
       return sheetID;
     } catch (error) {
-      console.error('❌ Error creating Google Sheet:', error.message);
-
+      console.error('❌ Error creating sheet:', error.message);
       if (sheetID) {
         try {
           await drive.files.delete({ fileId: sheetID });
-          console.warn(`🧹 Rolled back: Deleted sheet ${sheetID} due to error`);
-        } catch (deleteError) {
-          console.error('❌ Failed to auto-delete broken sheet:', deleteError.message);
+          console.warn(`🧹 Deleted broken sheet: ${sheetID}`);
+        } catch (delErr) {
+          console.error('❌ Cleanup failed:', delErr.message);
         }
       }
-
-      throw new Error('Failed to create Google Sheet');
+      throw error;
     }
   };
 
@@ -162,6 +305,7 @@ export const appendSummaryToSheet = async (sheet) => {
     if (summaryStartIndex !== -1) {
         for (let i = rows.length - 1; i >= summaryStartIndex; i--) {
             await rows[i].delete();
+            console.log(`delete row ${i}`);
         }
     }
 
@@ -207,3 +351,5 @@ export const appendSummaryToSheet = async (sheet) => {
     // Step 4: Append to sheet
     await sheet.addRows(summaryRows);
 };
+
+//Excel Alignment

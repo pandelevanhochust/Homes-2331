@@ -25,7 +25,7 @@ export const auditService = (service,revenue) => async(dispatch,getState) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify({service,revenue}),
+            body: JSON.stringify({service,revenue}),  
         })
 
         if (!response.ok) {
@@ -51,7 +51,7 @@ export const auditService = (service,revenue) => async(dispatch,getState) => {
 }
 
 // GET /api/staff/audit/:id?offset=0
-export const getAuditService = (service, offset = 0) => async (dispatch, getState) => {
+export const getAuditService = (id, offset = 0) => async (dispatch, getState) => {
     // console.log("In getAuditService",service,"offset:",offset);
     try {
       dispatch({ type: GET_AUDIT_REQUEST });
@@ -60,7 +60,7 @@ export const getAuditService = (service, offset = 0) => async (dispatch, getStat
         adminLogin: { userInfo },
       } = getState();
   
-      const response = await fetch(`/api/staff/audit/${service.id}?offset=${offset}&serviceID=${service.service_ID}`, {
+      const response = await fetch(`/api/staff/audit/${id}?offset=${offset}`, {
         method: 'GET',   
         headers: {
           'Content-Type': 'application/json',
