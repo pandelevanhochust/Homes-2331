@@ -1,4 +1,7 @@
 import {
+    GET_AUDIT_FAIL,
+    GET_AUDIT_REQUEST,
+    GET_AUDIT_SUCCESS,
     SERVICE_AUDIT_FAIL,
     SERVICE_AUDIT_REQUEST,
     SERVICE_AUDIT_SUCCESS,
@@ -228,6 +231,19 @@ export const serviceAuditReducer = (state={},action) => {
                 loading: false,
                 error: action.payload,
             };
+        default:
+            return state;
+    }
+}
+
+export const getServiceAuditReducer = (state={},action) => {
+    switch(action.type){
+        case GET_AUDIT_REQUEST:
+            return { loading: true };
+          case GET_AUDIT_SUCCESS:
+            return { loading: false, auditData: action.payload.auditData};
+          case GET_AUDIT_FAIL:
+            return { loading: false, error: action.payload };
         default:
             return state;
     }

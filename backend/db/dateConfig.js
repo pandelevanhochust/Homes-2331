@@ -1,19 +1,24 @@
-const getCurrentWeekTimeframe = () => {
+export const getCurrentWeekTimeframe = (offset = 0) => {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // Get current day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    today.setDate(today.getDate() + offset * 7); // move to target week
 
-    // Calculate the first (Monday) and last (Sunday) day of the week
+    const dayOfWeek = today.getDay(); // 0 = Sunday, ..., 6 = Saturday
     const firstDay = new Date(today);
-    firstDay.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+    firstDay.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Monday
 
     const lastDay = new Date(firstDay);
-    lastDay.setDate(firstDay.getDate() + 6);
+    lastDay.setDate(firstDay.getDate() + 6); // Sunday
 
-    // Function to format the date as "D/M/YYYY"
     const formatDate = (date) =>
-        `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`; // Month is 0-indexed, so +1
+        `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 
     return `${formatDate(firstDay)}-${formatDate(lastDay)}`;
 };
 
-export default getCurrentWeekTimeframe;
+
+export const getCurrentDate = () => {
+    const today = new Date();
+    return `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`
+}
+
+// export default {getCurrentDate,getCurrentWeekTimeframe};

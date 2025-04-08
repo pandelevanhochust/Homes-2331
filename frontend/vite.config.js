@@ -13,6 +13,10 @@ export default defineConfig({
           rewrite: (path) => path.replace(/^\/api/,"/api"),
         }
       },
+    // alias: {
+    //     '@backend': path.resolve(__dirname, 'backend'),
+    //   }
+      
     },
   },
 );

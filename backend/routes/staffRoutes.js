@@ -1,5 +1,5 @@
 import express from "express";
-import { auditService } from "../controller/auditController.js";
+import { auditService, getAuditService } from "../controller/auditController.js";
 import { createService, deleteService, updateService } from "../controller/serviceController.js";
 import { createStaff, getStaffDetail, listStaff, updateStaff } from "../controller/staffController.js";
 import { checkAuth } from "../middleware/authMiddleware.js";
@@ -30,6 +30,7 @@ router.route("/:id")
 
 router.route("/audit/:id")
     .post(checkAuth,auditService)
+    .get(checkAuth,getAuditService)
 
 //     .put(updateStaff);   
 //     .delete(deleteStaff);

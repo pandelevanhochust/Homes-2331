@@ -49,6 +49,7 @@ function StaffProfileScreen() {
   },[staff_detail]);
 
   console.log(staff_detail);
+  console.log(services);
 
   // Handle Basic Info Changes
   const handleChange = (e) => {

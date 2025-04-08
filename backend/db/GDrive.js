@@ -79,44 +79,54 @@ export const accessAuditFolder = async () => {
     return folderID;
 }
 
-// Create Sheet in Folder
-export const createSheetinFolder = async(folderId,sheetTitle) => {
+//Create googleSheets
+export const createSheetinFolder = async (folderId, sheetTitle, services = ['SM', 'Chat', 'Sakura', 'Imlive'], rate = '24.5') => {
     try {
-        const drive = serviceAccountAuth();
+      const drive = serviceAccountAuth();
+  
+      // Step 1: Create Google Sheet in Drive folder
+      const fileMetadata = {
+        name: sheetTitle,
+        mimeType: 'application/vnd.google-apps.spreadsheet',
+        parents: [folderId],
+      };
+  
+      const file = await  drive.files.create({
+        resource: fileMetadata,
+        fields: 'id',
+      });
+  
+      const sheetID =  file.data.id;
+      console.log(`✅ Google Sheet created successfully with ID: ${sheetID}`);
+  
+      // Step 2: Connect to the new sheet
+      const doc = await connectGoogleSheet(sheetID);
+      const sheet = doc.sheetsByIndex[0];
+  
+    // ✅ Step 1: Add display row at top
+    // await sheet.setHeaderRow(['Income', '', '', '', '', '', '', '', `rate: ${rate}`],1);
 
-        const fileMetadata = {
-            name: sheetTitle,
-            mimeType: "application/vnd.google-apps.spreadsheet",
-            parents: [folderId],
-        };
+    // ✅ Step 2: Set proper header for audit data
+    const headerRow = ['Name', ...services, 'Percentage', 'Total', 'Note'];
+    await sheet.setHeaderRow(headerRow); // Set at row 2
 
-        const file = await drive.files.create({
-            resource: fileMetadata,
-            fields: "id",
-        });
-        console.log("file created",file);
-        
-        await new Promise((resolve) => setTimeout(resolve, 3000)); 
-
-        const sheetID =  file.data.id;
-
-        console.log(`Google Sheet created successfully with ID: ${sheetID}`);
-
-        await new Promise((resolve) => setTimeout(resolve, 10000)); 
-
-        const doc = await connectGoogleSheet(sheetID);
-        // const auditSheet = doc.sheetsByIndex[0];
-
-        await doc.sheetsByIndex[0].setHeaderRow(["ID","Name","Income", "Service", "", "", "", "Percentage", "Total", "Note"]);
-
-        console.log("reach here");
-        console.log(`Initial data added to Sheet: ${sheetTitle}`);
-        return sheetID;
+      console.log('✅ Header and initial data row added to the sheet');
+      return sheetID;
     } catch (error) {
-        console.error("Error creating Google Sheet:", error);
-        throw new Error("Failed to create Google Sheet");
+      console.error('❌ Error creating Google Sheet:', error.message);
+
+      if (sheetID) {
+        try {
+          await drive.files.delete({ fileId: sheetID });
+          console.warn(`🧹 Rolled back: Deleted sheet ${sheetID} due to error`);
+        } catch (deleteError) {
+          console.error('❌ Failed to auto-delete broken sheet:', deleteError.message);
+        }
+      }
+
+      throw new Error('Failed to create Google Sheet');
     }
-};
+  };
 
 export const findSheetinFolder = async(folderId,sheetName) => {
     try{
@@ -139,3 +149,61 @@ export const findSheetinFolder = async(folderId,sheetName) => {
         throw new Error("Failed to search for sheet in folder");
     }
 }
+
+// Append dynamic summary block
+export const appendSummaryToSheet = async (sheet) => {
+    await sheet.loadHeaderRow();
+    const rows = await sheet.getRows();
+
+    const header = sheet.headerValues;
+
+    // Step 1: Remove old summary rows
+    const summaryStartIndex = rows.findIndex(row => row.Name && row.Name.toLowerCase().includes("total"));
+    if (summaryStartIndex !== -1) {
+        for (let i = rows.length - 1; i >= summaryStartIndex; i--) {
+            await rows[i].delete();
+        }
+    }
+
+    // Step 2: Calculate actual total
+    let staffTotal = 0;
+    const percentageMap = {
+        'Kế Toán': 0.01,
+        'Tech': 0.01,
+        'Trợ lý': 0.00,
+    };
+
+    for (const row of rows) {
+        const totalVal = parseFloat(row['Total']);
+        if (!isNaN(totalVal)) {
+            staffTotal += totalVal;
+        }
+    }
+
+    // Step 3: Build summary rows dynamically
+    const summaryRows = [
+        {},
+        { Name: 'Total' },
+    ];
+
+    let grandTotal = staffTotal;
+
+    for (const [name, rate] of Object.entries(percentageMap)) {
+        const cut = Math.round(staffTotal * rate);
+        summaryRows.push({
+            Name: name,
+            Percentage: `${rate * 100}%`,
+            Total: cut,
+            Note: `${cut.toLocaleString('vi-VN')} đ`
+        });
+        grandTotal += cut;
+    }
+
+    summaryRows.push({
+        Name: 'Grand total',
+        Total: grandTotal,
+    });
+
+    // Step 4: Append to sheet
+    await sheet.addRows(summaryRows);
+};
