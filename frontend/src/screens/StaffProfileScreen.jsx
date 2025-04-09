@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Button, Card, Collapse, Form, ListGroup } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { equipmentDebtMap } from "../../../backend/db/EquipmentDebt";
 import { getAuditService } from "../actions/auditAction";
 import { createService, deleteService, updateService } from "../actions/serviceAction";
 import { getStaffDetail, updateStaff } from "../actions/staffAction";
 import Loader from "../component/Loader";
 import ServiceItem from "../component/ServiceItem";
+import { equipmentDebtMap } from "../constants/EquipmentDebt";
 import { GET_AUDIT_RESET, SERVICE_AUDIT_RESET, SERVICE_CREATE_RESET, SERVICE_DELETE_RESET, SERVICE_UPDATE_RESET, STAFF_DETAIL_RESET } from "../constants/staffConstant";
 
 function StaffProfileScreen() {
