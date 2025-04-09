@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import {
   GET_AUDIT_FAIL,
   GET_AUDIT_REQUEST,
@@ -9,9 +8,8 @@ import {
 } from "../constants/staffConstant";
 
 
-dotenv.config();
+const API_BASE = import.meta.env.VITE_API_URL;
 
-const API_BASE = process.env.VITE_API_URL;
 
 export const auditService = (service,revenue,percentage) => async(dispatch,getState) => {
     console.log("reach here");

@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import {
     ADMIN_LOGIN_FAIL,
     ADMIN_LOGIN_REQUEST,
@@ -6,9 +5,8 @@ import {
     ADMIN_LOGOUT,
 } from "../constants/adminConstants";
 
-dotenv.config();
 
-const API_BASE = process.env.VITE_API_URL;
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export const loginAdmin = (username,password) => async(dispatch) => {
     try {

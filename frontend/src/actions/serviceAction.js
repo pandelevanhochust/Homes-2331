@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import {
     SERVICE_CREATE_FAIL,
     SERVICE_CREATE_REQUEST,
@@ -12,10 +11,7 @@ import {
 } from "../constants/staffConstant.js";
 
 
-dotenv.config();
-
-const API_BASE = process.env.VITE_API_URL;
-
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export const updateService = (service) => async (dispatch,getState) => {
     try{
