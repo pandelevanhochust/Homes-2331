@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import {
     SERVICE_CREATE_FAIL,
     SERVICE_CREATE_REQUEST,
@@ -11,6 +12,10 @@ import {
 } from "../constants/staffConstant.js";
 
 
+dotenv.config();
+
+const API_BASE = process.env.VITE_API_URL;
+
 
 export const updateService = (service) => async (dispatch,getState) => {
     try{
@@ -21,7 +26,7 @@ export const updateService = (service) => async (dispatch,getState) => {
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch(`/api/staff/service/${service.id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/service/${service.id}`,{
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -54,7 +59,7 @@ export const deleteService = (service) => async (dispatch,getState) => {
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch(`/api/staff/service/${service.id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/service/${service.id}`,{
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -88,7 +93,7 @@ export const createService = (id,service) => async (dispatch,getState) => {
         
         const {adminLogin: {userInfo}}= getState();
  
-        const response = await fetch(`/api/staff/service/${id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/service/${id}`,{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

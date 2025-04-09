@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import {
     STAFF_CREATE_FAIL,
     STAFF_CREATE_REQUEST,
@@ -17,6 +18,8 @@ import {
 } from "../constants/staffConstant.js";
 
 
+dotenv.config();
+const API_BASE = process.env.VITE_API_URL;
 export const createStaff = (staff) => async(dispatch,getState) => {
     try {
         dispatch({
@@ -28,7 +31,7 @@ export const createStaff = (staff) => async(dispatch,getState) => {
         console.log("Authorization Header:", `Bearer ${userInfo.token}`);
 
 
-        const response = await fetch("/api/staff",{
+        const response = await fetch(`${API_BASE}/api/staff`,{
             method : "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -60,7 +63,7 @@ export const listStaff = () => async (dispatch) => {
             type: STAFF_LIST_REQUEST
         })
 
-        const response  = await fetch("/api/staff",{
+        const response  = await fetch(`${API_BASE}/api/staff`,{
             method : "GET",
         }
         );
@@ -94,7 +97,7 @@ export const updateStaff = (staff) => async (dispatch,getState) =>{
         
         const {adminLogin: {userInfo},} = getState();
 
-        const respone = await fetch(`/api/staff/${staff.id}`,{
+        const respone = await fetch(`${API_BASE}/api/staff/${staff.id}`,{
             method: "PUT",
             headers: {  
                 "Content-Type": "application/json",
@@ -128,7 +131,7 @@ export const deleteStaff = (staff) => async (dispatch,getState) =>{
 
         const {adminLogin: {userInfo}} = getState();
 
-        const response = await fetch(`/api/delete/${staff._id}`,{
+        const response = await fetch(`${API_BASE}/api/delete/${staff._id}`,{
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -160,7 +163,7 @@ export const getStaffDetail = (id) => async(dispatch,getState) =>{
         })
         const {adminLogin: {userInfo}} = getState();
 
-        const response = await fetch(`/api/staff/${id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/${id}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

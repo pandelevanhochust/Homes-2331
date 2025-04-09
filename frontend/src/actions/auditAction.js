@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import {
   GET_AUDIT_FAIL,
   GET_AUDIT_REQUEST,
@@ -7,6 +8,10 @@ import {
   SERVICE_AUDIT_SUCCESS,
 } from "../constants/staffConstant";
 
+
+dotenv.config();
+
+const API_BASE = process.env.VITE_API_URL;
 
 export const auditService = (service,revenue,percentage) => async(dispatch,getState) => {
     console.log("reach here");
@@ -19,7 +24,7 @@ export const auditService = (service,revenue,percentage) => async(dispatch,getSt
         const {adminLogin: {userInfo}} = getState();
         console.log(userInfo);
 
-        const response = await fetch(`/api/staff/audit/${service.id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/audit/${service.id}`,{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -60,7 +65,7 @@ export const getAuditService = (id, offset = 0) => async (dispatch, getState) =>
         adminLogin: { userInfo },
       } = getState();
   
-      const response = await fetch(`/api/staff/audit/${id}?offset=${offset}`, {
+      const response = await fetch(`${API_BASE}/api/staff/audit/${id}?offset=${offset}`, {
         method: 'GET',   
         headers: {
           'Content-Type': 'application/json',

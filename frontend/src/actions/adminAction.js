@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import {
     ADMIN_LOGIN_FAIL,
     ADMIN_LOGIN_REQUEST,
@@ -5,6 +6,9 @@ import {
     ADMIN_LOGOUT,
 } from "../constants/adminConstants";
 
+dotenv.config();
+
+const API_BASE = process.env.VITE_API_URL;
 
 export const loginAdmin = (username,password) => async(dispatch) => {
     try {
@@ -12,7 +16,7 @@ export const loginAdmin = (username,password) => async(dispatch) => {
             type: ADMIN_LOGIN_REQUEST,
         });
 
-        const response = await fetch("/api/admin/login",{
+        const response = await fetch(`${API_BASE}/api/admin/login`,{
             method : "POST",
             headers : {
                 "Content-Type": "application/json"
