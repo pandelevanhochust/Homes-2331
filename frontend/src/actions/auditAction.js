@@ -8,9 +8,9 @@ import {
 } from "../constants/staffConstant";
 
 
-export const auditService = (service,revenue) => async(dispatch,getState) => {
+export const auditService = (service,revenue,percentage) => async(dispatch,getState) => {
     console.log("reach here");
-    console.log(service,revenue);
+    console.log(service,revenue,percentage);
     try {
         dispatch({
             type: SERVICE_AUDIT_REQUEST,
@@ -25,7 +25,7 @@ export const auditService = (service,revenue) => async(dispatch,getState) => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
             },
-            body: JSON.stringify({service,revenue}),  
+            body: JSON.stringify({service,revenue,percentage}),  
         })
 
         if (!response.ok) {

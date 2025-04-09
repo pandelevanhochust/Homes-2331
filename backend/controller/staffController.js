@@ -57,6 +57,7 @@ export const listStaff = AsyncHandler(async (req, res) => {
             equipmentDebt: row._rawData[5] || null,
             note : row._rawData[6] || "",
             service: mapService[row._rawData[1]] || [],
+            percentage: row._rawData[7] || null,
         }));
 
         console.log(staff)
@@ -91,6 +92,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
                 Password: password,
                 Image: image || 'none',
                 ID: id,
+                Percentage:null,
             });
         } else {
             const id = await generateID(staffSheet);
@@ -99,6 +101,9 @@ export const createStaff = AsyncHandler(async (req, res) => {
                 ID: id,
                 Image: image || 'none',
                 Type: type,
+                Equipment: "",
+                EquipmentDebt: 0,
+                Percentage: null,
             });
             
             const service_id = await generateID(serviceSheet);
@@ -122,7 +127,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
 // PUT api/staff/:id
 export const updateStaff = AsyncHandler(async (req, res) => {
     try {
-        const { _id, name, image, type, equipment, equipmentDebt, note} = req.body;
+        const { _id, name, image, type, equipment, equipmentDebt, note, percentage} = req.body;
         const {id} = req.params;
 
         // Connect to Google Sheet
@@ -154,8 +159,9 @@ export const updateStaff = AsyncHandler(async (req, res) => {
         if (staffRow._rawData[2] !== image) staffRow._rawData[2] = image;
         if (staffRow._rawData[3] !== type) staffRow._rawData[3] = type;
         if (staffRow._rawData[4] !== equipment) staffRow._rawData[4] = equipment;
-        if (staffRow._rawData[5] !== equipmentDebt) staffRow._rawData[5] = equipmentDebt;
+        if (staffRow._rawData[5] !== String(equipmentDebt)) staffRow._rawData[5] = String(equipmentDebt);
         if (staffRow._rawData[6] !== note) staffRow._rawData[6] = note;
+        if (staffRow._rawData[7] !== percentage) staffRow._rawData[7] = percentage;
         
         // Save changes to Google Sheets
         await staffRow.save(); 
@@ -173,6 +179,7 @@ export const updateStaff = AsyncHandler(async (req, res) => {
                 equipmentDebt: staffRow._rawData[5],
                 note: staffRow._rawData[6],
                 id: id,
+                percentage: staffRow._rawData[7],
             },
         });
 
@@ -232,6 +239,7 @@ export const getStaffDetail = AsyncHandler(async(req,res) => {
             note : staffRow._rawData[6] || "",
             id :  staffRow._rawData[1],
             service: mapService[staffRow._rawData[1]] || [],
+            percentage: staffRow._rawData[7] || null,
         });
 
     }catch(error){

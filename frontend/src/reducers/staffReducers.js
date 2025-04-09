@@ -1,9 +1,11 @@
 import {
     GET_AUDIT_FAIL,
     GET_AUDIT_REQUEST,
+    GET_AUDIT_RESET,
     GET_AUDIT_SUCCESS,
     SERVICE_AUDIT_FAIL,
     SERVICE_AUDIT_REQUEST,
+    SERVICE_AUDIT_RESET,
     SERVICE_AUDIT_SUCCESS,
     SERVICE_CREATE_FAIL,
     SERVICE_CREATE_REQUEST,
@@ -216,6 +218,8 @@ export const serviceAuditReducer = (state={},action) => {
                 loading: false,
                 error: action.payload,
             };
+        case SERVICE_AUDIT_RESET:
+            return{};
         default:
             return state;
     }
@@ -229,6 +233,8 @@ export const getServiceAuditReducer = (state={},action) => {
             return { loading: false, auditData: action.payload};
           case GET_AUDIT_FAIL:
             return { loading: false, error: action.payload };
+            case GET_AUDIT_RESET:
+                return{};
         default:
             return state;
     }

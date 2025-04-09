@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Form, ListGroup } from "react-bootstrap";
+import { Button, Card, Collapse, Form, ListGroup } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { equipmentDebtMap } from "../../../backend/db/EquipmentDebt";
@@ -8,7 +8,7 @@ import { createService, deleteService, updateService } from "../actions/serviceA
 import { getStaffDetail, updateStaff } from "../actions/staffAction";
 import Loader from "../component/Loader";
 import ServiceItem from "../component/ServiceItem";
-import { SERVICE_CREATE_RESET, SERVICE_DELETE_RESET, SERVICE_UPDATE_RESET, STAFF_DETAIL_RESET } from "../constants/staffConstant";
+import { GET_AUDIT_RESET, SERVICE_AUDIT_RESET, SERVICE_CREATE_RESET, SERVICE_DELETE_RESET, SERVICE_UPDATE_RESET, STAFF_DETAIL_RESET } from "../constants/staffConstant";
 
 function StaffProfileScreen() {
 
@@ -20,19 +20,28 @@ function StaffProfileScreen() {
   const { loading: createLoading, success: createSuccess} = useSelector((state) => state.serviceCreate);
   const { loading: updateLoading, success: updateSuccess} = useSelector((state) => state.serviceUpdate);
   const { loading: deleteLoading, success: deleteSuccess} = useSelector((state) => state.serviceDelete);
-  const { auditData } = useSelector((state) => state.getServiceAudit);
+  const { loading: getAuditLoading, success: getAuditSuccess, auditData } = useSelector((state) => state.getServiceAudit);
+  const { loading: auditLoading, success: auditSuccess } = useSelector((state) => state.serviceAudit);
+  // const { loading: staffUpdateLoading, success:  
 
   const [editBasicInfo, setEditBasicInfo] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("edit");
   const [staffData, setStaffData] = useState({});
   const [services, setServices] = useState([]);
   const [services_name,setServicesName] = useState([]);
+
+  //Percentage
+  const [editPercentage, setEditPercentage] = useState(false);
+  // const [percentage, setPercentage] = useState(staff_detail.percentage ?? 0);
+
   // Equipment
   const [equipment,setEquipment] = useState([]);
   const [addEquipment,setAddEquipment] = useState(false);
   const [selectedEquipment,setSelectedEquipment] = useState("");
   const [otherEquipmentPrice,setOtherEquipmentPrice] = useState("");
   const [equipmentDebt,setEquipmentDebt] = useState(0);
+  const [totalEquipmentDebt, setTotalEquipmentDebt] = useState(0); 
+  const [showEquipment, setShowEquipment] = useState(false);
 
   //Audit
   const getCurrentWeekTimeframe = (offset = 0) => {
@@ -55,23 +64,33 @@ function StaffProfileScreen() {
   const [weekFrame, setWeekFrame] = useState(getCurrentWeekTimeframe(weekOffset));
   const [auditMap, setAuditMap] = useState({});
 
-  // Fetch staff details - Initial services - Calculate total debt
+  console.log("here the audit data",auditData);
+
   useEffect(() => {
     dispatch(getStaffDetail(id));
   }, [dispatch, id]);
 
   useEffect(() => {
+    setWeekFrame(getCurrentWeekTimeframe(weekOffset));
+    dispatch(getAuditService(id, weekOffset));
+  }, [dispatch, id,weekOffset]);
+
+  useEffect(() => {
     if (createSuccess || updateSuccess || deleteSuccess) {
       dispatch(getStaffDetail(id));
-      if(staffDetailSuccess){
-        dispatch({ type: SERVICE_CREATE_RESET });
-        dispatch({ type: SERVICE_UPDATE_RESET });
-        dispatch({ type: SERVICE_DELETE_RESET });
-        dispatch({ type: STAFF_DETAIL_RESET});
-      }
+      dispatch({ type: SERVICE_CREATE_RESET });
+      dispatch({ type: SERVICE_UPDATE_RESET });
+      dispatch({ type: SERVICE_DELETE_RESET });
+      dispatch({ type: STAFF_DETAIL_RESET });
     }
-  }, [createSuccess, updateSuccess, deleteSuccess, staffDetailSuccess, dispatch, id]);
-  
+
+    if (auditSuccess) {
+      dispatch(getAuditService(id, weekOffset));
+      dispatch(getStaffDetail(id));
+      dispatch({ type: GET_AUDIT_RESET });
+      dispatch({ type: SERVICE_AUDIT_RESET });
+    }
+  }, [createSuccess, updateSuccess, deleteSuccess, auditSuccess, dispatch, id, weekOffset]);
 
   useEffect(() => {
     if (staff_detail) {
@@ -82,52 +101,40 @@ function StaffProfileScreen() {
         editMode: false,
       }));
       setServices(services);
-
-      console.log("Services here",services);
   
       const serviceNames = services.map((srv) => srv.service);
       setServicesName(serviceNames);
-  
+      setEquipmentDebt(Number(staff_detail.equipmentDebt) ?? 0);
+
       if (staff_detail.equipment) {
-        setEquipment(staff_detail.equipment.split(",").map((item) => item.trim()));
-      }
+        const parsedEquip = staff_detail.equipment.split(",").map(item => item.trim());
+        setEquipment(parsedEquip);
   
-      setEquipmentDebt(parseInt(staff_detail.equipmentDebt));
+        const calculatedTotal = parsedEquip.reduce((acc, item) => acc + (equipmentDebtMap.get(item) || 0), 0);
+        setTotalEquipmentDebt(calculatedTotal);
+      } else {
+        setEquipment([]);
+        setTotalEquipmentDebt(0); // reset
+      }
     }
-    setWeekFrame(getCurrentWeekTimeframe(weekOffset));
-    if(services.length > 0 || !createLoading) {    dispatch(getAuditService(id, weekOffset));    }
-  }, [dispatch, id, staff_detail, weekOffset]);
-
-
+  }, [staff_detail]);
+  
   useEffect(() => {
     if (auditData && services_name.length > 0) {
       const newAuditMap = {};
-  
+
       services_name.forEach((svc) => {
         const revenue = auditData[svc] || ""; // fallback to empty if not found
         newAuditMap[svc] = revenue;
       });
-  
+
       setAuditMap(newAuditMap);
     }
   }, [auditData, services_name]);
-  
+
   
   console.log(staff_detail);
   console.log(services);
-
-  //Handle Calculation
-    const computeTotalIncome = (auditMap) => {
-      return Object.values(auditMap).reduce((acc, val) => {
-        const num = parseInt(val);
-        return acc + (isNaN(num) ? 0 : num);
-      }, 0);
-    };
-
-    const totalIncome = computeTotalIncome(auditMap);
-    const totalDebt = equipmentDebt;
-    const percentDebt = totalIncome > 0 ? ((totalDebt / totalIncome) * 100).toFixed(2) : "N/A";
-
 
   // Handle Basic Info Changes
   const handleChange = (e) => {
@@ -138,6 +145,7 @@ function StaffProfileScreen() {
   const updateStaffHandler = () => {
     dispatch(updateStaff(staffData));
     setEditBasicInfo(false);
+    setEditPercentage(false);
   };
 
   // Handle Service Changes
@@ -195,256 +203,337 @@ function StaffProfileScreen() {
 
   const addEquipmentHandler = () => {
     if (selectedEquipment !== "Select equipment" && selectedEquipment !== "Others") {
-      const currentDebt = equipmentDebt + parseInt(equipmentDebtMap.get(selectedEquipment) ?? 0)
-      console.log("reach here",currentDebt);      
-      setEquipmentDebt(currentDebt);
-      console.log("reach here",equipmentDebt);
-
+      // 1. Calculate the new total equipment debt
+      const currentDebt = equipmentDebt + parseInt(equipmentDebtMap.get(selectedEquipment) ?? 0);
+      setTotalEquipmentDebt(totalEquipmentDebt + parseInt(equipmentDebtMap.get(selectedEquipment) ?? 0))
+  
+      // 2. Update equipment array and convert to string for saving
       const updatedEquipment = [...equipment, selectedEquipment];
-      setEquipment(updatedEquipment);
       const updatedEquipmentString = updatedEquipment.join(", ");
-
+  
+      // 3. Update local React states
+      setEquipment(updatedEquipment);
+      setEquipmentDebt(currentDebt);
+      setSelectedEquipment("");
+      setAddEquipment(false);
+  
+      // 4. Update staffData in local state
       setStaffData((prev) => ({
         ...prev,
-        equipment: updatedEquipmentString, 
-        equipmentDebt: equipmentDebt, 
+        equipment: updatedEquipmentString,
+        equipmentDebt: currentDebt,
       }));
   
+      // 5. Dispatch updateStaff to backend
       dispatch(updateStaff({
         ...staffData,
         equipment: updatedEquipmentString,
-        equipmentDebt: equipmentDebt,
+        equipmentDebt: currentDebt,
       }));
-      setAddEquipment(false);
-      setSelectedEquipment("");
-    } else if(selectedEquipment === "Others"){
+    } else if (selectedEquipment === "Others") {
       setAddEquipment(!addEquipment);
       setSelectedEquipment("");
     }
   };
-
+  
   const updateAuditValue = (serviceName, revenue) => {
     setAuditMap(prev => ({
       ...prev,
       [serviceName]: revenue
     }));
   };
-  
 
-
-  if (loading) {
-    return (
-      <Loader/>
-    );
-  }
-
-  if (!staff_detail) {
-    return <h2 className="text-center mt-5 text-danger">{error}</h2>;
+  if (loading || createLoading || deleteLoading || updateLoading){
+    return <Loader/>
   }
 
   return (
-    <Card
-    className="shadow-lg p-4 d-flex flex-column justify-content-center align-items-center w-100 h-100 mb-5"
-    style={{ minHeight: "100vh", maxWidth: "100vw" }}
-  >
-    {/* Profile Image */}
-    <Card.Img
-      variant="top"
-      src={staffData.image || "https://via.placeholder.com/150"}
-      alt={staffData.name}
-      className="rounded-circle mx-auto d-block shadow-sm"
-      style={{ width: "150px", height: "150px", objectFit: "cover" }}
-    />
-  
-    <Card.Body className="w-100">
-      {/* Staff Profile Header */}
-      <div className="d-flex justify-content-between align-items-center">
-        <h4>Staff Profile</h4>
-        <div className="d-flex gap-2">
-          {editBasicInfo && (
-            <Button variant="success" size="sm" onClick={updateStaffHandler}>
-              Save
-            </Button>
-          )}
-          <Button variant="info" size="sm" onClick={() => setEditBasicInfo(!editBasicInfo)}>
-            {editBasicInfo ? "Cancel" : "Edit"}
-          </Button>
-        </div>
-      </div>
-  
-      <hr />
-  
-      {/* Basic Info Section */}
-      <ListGroup variant="flush" className="mb-3 text-start">
-
-        <ListGroup.Item className="d-flex gap-3">
-          {/* Name Field */}
-          <div className="flex-grow-1">
-            <strong>Name:</strong>{" "}
-            {editBasicInfo ? (
-              <Form.Control type="text" name="name" value={staffData.name} onChange={handleChange} />
-            ) : (
-              staffData.name || "N/A"
-            )}
-          </div>
-  
-          {/* Type Field */}
-          <div className="flex-grow-1">
-            <strong>Type:</strong>{" "}
-            {editBasicInfo ? (
-              <Form.Select name="type" value={staffData.type} required onChange={handleChange}>
-                <option value="Online">Online</option>
-                <option value="Offline">Offline</option>
-              </Form.Select>
-            ) : (
-              staffData.type || "N/A"
-            )}
-          </div>
-        </ListGroup.Item>
-  
-        <ListGroup.Item>
-          <strong>Note:</strong>{" "}
-          {editBasicInfo ? (
-            <Form.Control type="text" name="note" value={staffData.note} onChange={handleChange} />
-          ) : (
-            staffData.note || "No additional notes"
-          )}
-        </ListGroup.Item>
-      </ListGroup>
-  
-      <hr />
-  
-      {/* Services Section */}
-      <div className="d-flex justify-content-between align-items-center">
-        <h4>Services</h4>
-
-        <div className="d-flex gap-2 mt-2">
-          <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
-            ⬅ Previous Week
-          </Button>
-          <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
-            🔁 Current
-          </Button>
-        </div>
-
-        <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
-          ➕ Add
-        </Button>
-      </div>
-
-      <ListGroup variant="flush" className="m-3">
-        {createLoading && <Loader/>}
-        {!createLoading && services.map((service, index) => (
-          <ServiceItem
-            key={index}
-            service={service}
-            index={index}
-            toggleEdit={toggleEditService}
-            handleSave={updateServiceHandler}
-            handleChange={handleServiceChange}
-            handleRemove={removeServiceHandler}
-            auditValue={auditMap[service.service] || ""}
-            weekOffset={weekOffset}
-            setWeekOffset={setWeekOffset}
-            weekFrame={weekFrame}
-            auditData={auditData}
-            updateAuditValue={updateAuditValue}
-          />
-        ))}
-      </ListGroup>
+    <div>
+    {/* { && <Loader/>} */}
+    {!staff_detail && <h2 className="text-center mt-5 text-danger">{error}</h2>}
+    {
+      !loading && staff_detail && (
+        <Card className="shadow-lg p-4 d-flex flex-column justify-content-center align-items-center w-100 h-100 mb-5" style={{ minHeight: "100vh", maxWidth: "100vw" }}>
+        {/* Profile Image */}
+        <Card.Img
+          variant="top"
+          src={staffData.image || "https://via.placeholder.com/150"}
+          alt={staffData.name}
+          className="rounded-circle mx-auto d-block shadow-sm"
+          style={{ width: "150px", height: "150px", objectFit: "cover" }}
+        />
       
-      <hr />
-      <h4>Audit</h4>
-      <div className="d-flex justify-content-between align-items-center">
-        <h5 className="ms-3 mt-3"> Equipment: </h5>
+        <Card.Body className="w-100">
+          {/* Staff Profile Header */}
+          <div className="d-flex justify-content-between align-items-center">
+            <h4>Staff Profile</h4>
+            <div className="d-flex gap-2">
+              {editBasicInfo && (
+                <Button variant="success" size="sm" onClick={updateStaffHandler}>
+                  Save
+                </Button>
+              )}
+              <Button variant="info" size="sm" onClick={() => setEditBasicInfo(!editBasicInfo)}>
+                {editBasicInfo ? "Cancel" : "Edit"}
+              </Button>
+            </div>
+          </div>
+      
+          <hr />
 
-      </div>
+          {/* Basic Info Section */}
+          <ListGroup variant="flush" className="mb-3 text-start">
+            <ListGroup.Item className="d-flex gap-3">
+              {/* Name Field */}
+              <div className="flex-grow-1">
+                <strong>Name:</strong>{" "}
+                {editBasicInfo ? (
+                  <Form.Control type="text" name="name" value={staffData.name} onChange={handleChange} />
+                ) : (
+                  staffData.name || "N/A"
+                )}
+              </div>
+      
+              {/* Type Field */}
+              <div className="flex-grow-1">
+                <strong>Type:</strong>{" "}
+                {editBasicInfo ? (
+                  <Form.Select name="type" value={staffData.type} required onChange={handleChange}>
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                  </Form.Select>
+                ) : (
+                  staffData.type || "N/A"
+                )}
+              </div>
+            </ListGroup.Item>
+      
+            <ListGroup.Item>
+              <strong>Note:</strong>{" "}
+              {editBasicInfo ? (
+                <Form.Control type="text" name="note" value={staffData.note} onChange={handleChange} />
+              ) : (
+                staffData.note || "No additional notes"
+              )}
+            </ListGroup.Item>
+          </ListGroup>
 
-      {(equipment.length > 0) && equipment.map((equip,index) => (
-        <ListGroup.Item key={index} className="ms-5 mb-2 d-flex gap-3"> 
-          <div className="col-6">
-            <strong>{equip}</strong>
+          <hr/>
+          {/* Percentage */}
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <h4 className="ms-1">📊 Percentage:</h4>
+
+            {editPercentage ? (
+              <>
+                <Form.Control
+                  type="number"
+                  name="percentage"  
+                  min="0"
+                  max="100"
+                  onChange={handleChange}
+                  value = {staffData.percentage ?? 100}
+                  className="w-25" />
+                <span>%</span>
+                <Button variant="success" size="sm" onClick={updateStaffHandler}> 
+                   ✅
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="mb-0">{staffData.percentage || 100}%</p>
+                <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
+                  ✏️ 
+                </Button>
+              </>
+            )}
           </div>
 
-          <div className="col-6 text-start">
-            Debt: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebtMap.get(equip) ?? 0)}
-          </div>     
-        </ListGroup.Item>
-      ))}
-
-      {!addEquipment &&
-      <Button className="ms-4" style={{ background: "none", border: "none", color: "gray" }} onClick={() => setAddEquipment(!addEquipment)}>
-          ➕ Add
-      </Button> }
-
-      {addEquipment && 
-        <div className="d-flex align-items-center gap-2 ms-5 w-100 mt-3">
-          <Form.Select className="w-25" onChange={(e) => setSelectedEquipment(e.target.value)}>
-            <option value="">Select Equipment</option>
-            <option value="Camera">Camera</option>
-            <option value="Laptop">Laptop</option>
-            <option value="Mic">Mic</option>
-            <option value="Lighting">Lighting</option>
-            <option value="Others">Others</option>
-          </Form.Select>
-
-        {selectedEquipment === "Others" && (
-          <div className="d-flex align-items-center gap-2 w-50">
-            <Form.Control
-              type="text"
-              className="w-40"
-              onChange={(e) => setSelectedEquipment(e.target.value)}
-              placeholder="Enter custom equipment"
-            />
-            <Form.Control
-              type="text"
-              className="w-35"
-              // value = {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(parseInt(`${otherEquipmentPrice}000`))}
-              onChange={(e) => setOtherEquipmentPrice(e.target.value)}
-              placeholder="Enter price"
-            />
+          <hr />
+      
+          {/* Services Section */}
+          <div className="d-flex justify-content-between align-items-center">
+            <h4>Services</h4>
+    
+            <div className="d-flex gap-3">
+              <strong>{weekFrame}</strong>
+              <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
+                ⬅ Previous Week
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
+                🔁 Current
+              </Button>
+            </div>
+    
+            <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
+              ➕ Add
+            </Button>
           </div>
-        )}
+    
+          <ListGroup variant="flush" className="m-3">
+            {createLoading && <Loader/>}
+            {!createLoading && services.map((service, index) => (
+              <ServiceItem
+                key={index}
+                service={service}
+                index={index}
+                toggleEdit={toggleEditService}
+                handleSave={updateServiceHandler}
+                handleChange={handleServiceChange}
+                handleRemove={removeServiceHandler}
+                auditValue={auditMap[service.service] || ""}
+                weekOffset={weekOffset}
+                setWeekOffset={setWeekOffset}
+                weekFrame={weekFrame}
+                auditData={auditData}
+                updateAuditValue={updateAuditValue}
+                percentage = {staffData.percentage}
+              />
+            ))}
+          </ListGroup>
+          
+          <hr />
+          {/* Equipment Section */}
+          <div className="d-flex justify-content-between align-items-center mb-2">
+              <h4>🛠 Equipment</h4>
+              <Button variant="light" onClick={() => setShowEquipment(!showEquipment)}>
+                {showEquipment ? "Hide" : "Show"}
+              </Button>
+          </div>
 
-        <Button variant="info" className="w-10" size="sm" onClick={addEquipmentHandler}>
-          Save
-        </Button>
-        <Button variant="light" className="w-10" size="sm" onClick={() => setAddEquipment(!addEquipment)}>
-          ✖️
-        </Button>
-      </div>
-      }
+          <Collapse in={showEquipment}>
+            <div>
+            {(equipment.length > 0) && equipment.map((equip,index) => (
+              <ListGroup.Item key={index} className="ms-5 mb-2 d-flex gap-3"> 
+                <div className="col-6">
+                  <strong>{equip}</strong>
+                </div>
+                <div className="col-6 text-start">
+                  Debt: {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebtMap.get(equip) ?? 0)}
+                </div>     
+              </ListGroup.Item>
+            ))}
+      
+            {!addEquipment &&
+            <Button className="ms-4" style={{ background: "none", border: "none", color: "gray" }} onClick={() => setAddEquipment(!addEquipment)}>
+                ➕ Add
+            </Button> }
+      
+            {addEquipment && 
+              <div className="d-flex align-items-center gap-2 ms-5 w-100 mt-3">
+                <Form.Select className="w-25" onChange={(e) => setSelectedEquipment(e.target.value)}>
+                  <option value="">Select Equipment</option>
+                  <option value="Camera">Camera</option>
+                  <option value="Laptop">Laptop</option>
+                  <option value="Mic">Mic</option>
+                  <option value="Lighting">Lighting</option>
+                  <option value="Others">Others</option>
+                </Form.Select>
+      
+              {selectedEquipment === "Others" && (
+                <div className="d-flex align-items-center gap-2 w-50">
+                  <Form.Control
+                    type="text"
+                    className="w-40"
+                    onChange={(e) => setSelectedEquipment(e.target.value)}
+                    placeholder="Enter custom equipment"
+                  />
+                  <Form.Control
+                    type="text"
+                    className="w-35"
+                    // value = {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(parseInt(`${otherEquipmentPrice}000`))}
+                    onChange={(e) => setOtherEquipmentPrice(e.target.value)}
+                    placeholder="Enter price"
+                  />
+                </div>
+              )}
+      
+              <Button variant="info" className="w-10" size="sm" onClick={addEquipmentHandler}>
+                Save
+              </Button>
+              <Button variant="light" className="w-10" size="sm" onClick={() => setAddEquipment(!addEquipment)}>
+                ✖️
+              </Button>
+            </div>}
+            </div>
+          </Collapse>
 
-      <hr/>
-      <div className="mt-3">
-        <div className="d-flex gap-4" >
-          <h5>Equipment Debt:</h5> 
-          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
-        </div>
 
-        <div className="d-flex gap-4" >
-          <h5>Location:</h5> 
-          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(equipmentDebt)}</p>
-        </div>
-
-        <div className="d-flex gap-4">
-          <h5>Percentage:</h5> 
-          <p>{percentDebt !== "N/A" ? `${percentDebt}%` : "N/A"}</p>
-        </div>
-
-        <div className="d-flex gap-4">
-          <h5>Total Income:</h5> 
-          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalIncome)}</p>
-        </div>
-
-        <div className="d-flex gap-4">
-          <h5>Total Debt:</h5> 
-          <p>{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalDebt)}</p>
-        </div>
-      </div>
-    </Card.Body>
-  </Card>
+          <div className="d-flex justify-content-between align-items-center">
+            <h6 className="ms-5"> Total Equipment Debt: </h6> 
+            <p className="col-5 text-start" >{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}</p>
+          </div>
   
+          <hr/>
+
+          <div className="d-flex justify-content-between align-items-center">
+            <h4>Audit</h4>
+    
+            <div className="d-flex gap-3">
+              <strong>{weekFrame}</strong>
+              <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
+                ⬅ Previous Week
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
+                🔁 Current
+              </Button>
+            </div>
+    
+            <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
+              ➕ Add
+            </Button>
+          </div>
+
+          {(getAuditLoading || auditLoading) && <Loader/>}
+
+          {!getAuditLoading && !auditLoading &&
+          <div className="mt-3 pt-3">
+            <div className="d-flex gap-4">
+              <h6>📊 Percentage:</h6> 
+              <p>{`${staffData.percentage ?? "Not activated"}%`}</p>
+            </div>
+
+            <div className="mt-1 d-flex gap-4">
+              <h6>💰 Weekly Total Income:</h6> 
+              <p>
+                {auditData?.Total
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    }).format(Number(auditData.Total))
+                  : "Failed to fetch"}
+              </p>
+            </div>
+
+            <hr/>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+              <p className="col-5 text-start text-primary">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
+              </p>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+              <p className="col-5 text-start text-warning">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
+                  .format(0.1 * ((auditData?.Total || 0) * 24500))}
+              </p>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              <p className="col-5 text-start text-success">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
+              </p>
+            </div>
+          </div>}
+
+        </Card.Body>
+      </Card>
+      )
+    }
+    </div>
   );
 }
 

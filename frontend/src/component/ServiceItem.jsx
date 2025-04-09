@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, ListGroup, Spinner } from 'react-bootstrap';
+import { Alert, Button, Form, ListGroup, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { auditService } from '../actions/auditAction';
 
@@ -16,6 +16,7 @@ const ServiceItem = ({
   weekFrame,
   auditData,
   updateAuditValue,
+  percentage,
 }) => {
   const dispatch = useDispatch();
   const [toggleAudit, setToggleAudit] = useState(false);
@@ -24,7 +25,10 @@ const ServiceItem = ({
 
   const { loading: auditLoading } = useSelector((state) => state.serviceAudit);
   const { loading: getAuditLoading } = useSelector((state) => state.getServiceAudit || {});
+  const { loading: createLoading, success: createSuccess} = useSelector((state) => state.serviceCreate);
   
+  const [showAlert, setShowAlert] = useState(false); 
+
 
   useEffect(() => {
     setLocalAudit(auditValue);
@@ -32,10 +36,14 @@ const ServiceItem = ({
   
 
   const AuditServiceHandler = () => {
+    if (!percentage){
+      setShowAlert(true);
+      return;
+    } 
     if (!revenue || revenue === 0 || revenue === '') {
       setToggleAudit(false);
     } else {
-      dispatch(auditService(service, revenue));
+      dispatch(auditService(service, revenue,percentage));
       setLocalAudit(revenue);
       updateAuditValue(service.service, revenue);
       setToggleAudit(false);
@@ -43,9 +51,11 @@ const ServiceItem = ({
   };
 
   const renderAuditedRevenue = () => {
-    if (getAuditLoading || auditLoading) return <Spinner animation="border" size="sm" />;
-    if (!localAudit) return <i>None</i>;
-    return `$${Number(localAudit).toLocaleString()}`;
+    if (!toggleAudit && !service.editMode){
+      if (getAuditLoading || auditLoading) return <Spinner animation="border" size="sm" />;
+      if (!localAudit) return <i>Haven't been audited yet</i>;
+      return `$${parseInt(localAudit)}`;
+    }
   };
 
   const getCurrentDate = () => {
@@ -53,10 +63,15 @@ const ServiceItem = ({
     return `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`
 }
 
-
   return (
+    
     <ListGroup.Item className="text-start m-2">
-      <div className="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-1">
+     {showAlert && (
+        <Alert variant="warning" onClose={() => setShowAlert(false)} dismissible>
+          Percentage hasn't been activated
+        </Alert>
+      )}
+      <div className="d-flex justify-content-between align-items-start mb-4">
       {/* Left: Service Info */}
       <div className="flex-fill" style={{ minWidth: '260px', flex: 1 }}>
         <strong>Service:</strong>{' '}
@@ -105,9 +120,8 @@ const ServiceItem = ({
       </div>
 
       {/* Middle: Revenue and Audit Controls */}
-      <div className="flex-fill d-flex flex-column justify-content-between" style={{ minWidth: '200px', flex: 1 }}>
+      <div className="flex-fill d-flex flex-column align-items-start justify-content-between" style={{ minWidth: '200px', flex: 1 }}>
         <div>
-          <strong>{weekFrame}</strong>
           <br />
           <strong>Week's Revenue:</strong>
           <div>{renderAuditedRevenue()}</div>

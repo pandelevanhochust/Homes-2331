@@ -149,21 +149,17 @@ export const createSheetinFolder = async (folderId, sheetTitle, rate = '24.5') =
       const doc = await waitForSheetReady(sheetID);
       const sheet = doc.sheetsByIndex[0];
   
-      // Step 2: Set Header Row
       const headerRow = ['Name', ...SERVICES, 'Percentage', 'Total', 'Note'];
       await sheet.setHeaderRow(headerRow);
   
-      // Step 3: Add 49 placeholder rows with zero-width space
       const placeholderRow = Object.fromEntries(headerRow.map(col => [col, zeroWidth]));
       const placeholderRows = Array(STAFF_ROW_COUNT - 1).fill(placeholderRow);
   
-      // Step 4: Add a dump row at row 51
       const dumpRow = Object.fromEntries(headerRow.map(col => [col, zeroWidth]));
       dumpRow['Name'] = '__DUMP__';
   
       await sheet.addRows([...placeholderRows, dumpRow]);
   
-      // Step 5: Add footer formulas
       const startRow = STAFF_ROW_COUNT + 2; // Header + 50 rows + 1
       const totalCol = String.fromCharCode(65 + headerRow.length - 2); // Total column
       const noteCol = String.fromCharCode(65 + headerRow.length - 1); // Note column
@@ -177,23 +173,7 @@ export const createSheetinFolder = async (folderId, sheetTitle, rate = '24.5') =
                 svc, `=TEXT(SUM(${colRef(i)}2:${colRef(i)}${STAFF_ROW_COUNT + 1}), "$#,##0.00")`])
           ),
           Total: `=TEXT(SUM(${totalCol}2:${totalCol}${STAFF_ROW_COUNT + 1}), "$#,##0.00")`,
-          Note: `=TEXT(
-  SUM(
-    ARRAYFORMULA(
-      VALUE(
-        SUBSTITUTE(
-          REGEXREPLACE(H2:H51; "[^0-9.,]"; "");
-          ",";
-          ""
-        )
-      )
-    )
-  );
-  "#,##0 ""đ"""
-)
-
-                    `
-        },
+          Note: `=TEXT(SUM(${noteCol}2:${noteCol}${STAFF_ROW_COUNT + 1}), "#,##0 \"đ\"")`,        },
         {
           Name: 'Kế Toán',
           Percentage: '1%',
@@ -242,12 +222,6 @@ export const createSheetinFolder = async (folderId, sheetTitle, rate = '24.5') =
         const cell = sheet.getCell(startRow - 1 + i, 0);
         cell.textFormat = { bold: true };
       }
-
-    //   const noteColumnIndex = headerRow.indexOf('Note');
-    //     for (let i = 1; i <= startRow + footerRows.length; i++) {
-    //     const cell = sheet.getCell(i, noteColumnIndex);
-    //     cell.horizontalAlignment = 'RIGHT';
-    //     }
   
       // Optional: style dump row as gray
       const dumpCell = sheet.getCell(STAFF_ROW_COUNT, 0); // A51
@@ -351,5 +325,3 @@ export const appendSummaryToSheet = async (sheet) => {
     // Step 4: Append to sheet
     await sheet.addRows(summaryRows);
 };
-
-//Excel Alignment

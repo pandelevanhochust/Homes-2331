@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import AsyncHandler from 'express-async-handler';
+import { formatUSD, formatVND, parseCurrency } from '../db/Currency.js';
 import { getCurrentWeekTimeframe } from '../db/dateConfig.js';
 import { accessAuditFolder, createSheetinFolder, findSheetinFolder } from '../db/GDrive.js';
 import connectGoogleSheet from '../db/sheet.js';
@@ -11,24 +12,14 @@ const STAFF_SHEET = process.env.STAFF_SHEET;
 const ADMIN_SHEET = process.env.ADMIN_SHEET;
 const SERVICE_SHEET = process.env.SERVICE_SHEET;
 const SHEET_ID = process.env.SHEET_ID;
-
-const formatUSD = (num) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(num);
-
-const formatVND = (num) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(num);
-
-const parseCurrency = (val) => {
-  if (!val || typeof val !== "string") return 0;
-  const clean = val.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
-  return parseFloat(clean) || 0;
-};
+const DEBT_RATE  = process.env.DEBT_RATE;
+const EXCHANGE_RATE = process.env.EXCHANGE_RATE;
 
 // POST /api/staff/audit/:id
 export const auditService = AsyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
-    const { service, revenue } = req.body;
+    const { service, revenue, percentage} = req.body;
 
     const folderID = await accessAuditFolder();
     if (!folderID) return res.status(500).json({ message: "Failed to access audit folder" });
@@ -62,15 +53,15 @@ export const auditService = AsyncHandler(async (req, res) => {
     if (staffIndex === -1) return res.status(404).json({ message: "Staff not found" });
 
     const name = staff_rows[staffIndex]._rawData[0];
-    const type = staff_rows[staffIndex]._rawData[3];
-    const rate = type === "Online" ? 0.7 : 0.55;
-    const percentage = type === "Online" ? "70%" : "55%";
+    const rate = parseFloat(parseInt(percentage)/100);
+    console.log("Here the rate:", rate);
 
-    service_rows[serviceIndex]._rawData[6] = parseInt(revenue);
+    const equipmentDebt = parseInt(staff_rows[staffIndex]._rawData[5]);
+
+    service_rows[serviceIndex]._rawData[6] = formatUSD(revenue);
 
     const staffAuditRowIndex = audit_rows.findIndex(row => row._rawData[0] === name);
 
-    const EXCHANGE_RATE = 24.5;
     const usdAmount = revenue * rate;
     const vndAmount = usdAmount * EXCHANGE_RATE;
     
@@ -80,6 +71,27 @@ export const auditService = AsyncHandler(async (req, res) => {
     
 
     if (staffAuditRowIndex >= 0) {
+
+      let incomeTotal = 0;
+
+      if (equipmentDebt > 0) {
+        const deduction = DEBT_RATE * revenue * 24500;
+        const remainingDebt = equipmentDebt - deduction;
+      
+        let updatedDebt;
+        if (remainingDebt >= 0) {
+          updatedDebt = remainingDebt;
+        } else {
+          const remainder = Math.abs(remainingDebt);
+          updatedDebt = 0;
+          incomeTotal += remainder;      
+        }
+        staff_rows[staffIndex]._rawData[5] = updatedDebt.toFixed(2);
+        await staff_rows[staffIndex].save();
+      } else {
+        console.log("✅ No deduction applied. Equipment debt is already 0.");
+      }
+
       const auditRow = audit_rows[staffAuditRowIndex];
       const newRaw = [...auditRow._rawData];
 
@@ -87,7 +99,6 @@ export const auditService = AsyncHandler(async (req, res) => {
       if (serviceColIndex !== -1) newRaw[serviceColIndex] = formattedRevenue;
 
       // Calculate total
-      let incomeTotal = 0;
       ['SM', 'Chat', 'Sakura', 'Imlive'].forEach((svc) => {
         const colIdx = header.findIndex(h => h.toLowerCase() === svc.toLowerCase());
         const val = parseCurrency(newRaw[colIdx]);
@@ -95,12 +106,13 @@ export const auditService = AsyncHandler(async (req, res) => {
       });
 
       const totalVal = incomeTotal * rate;
-      newRaw[header.findIndex(h => h.toLowerCase() === 'percentage')] = percentage;
+      newRaw[header.findIndex(h => h.toLowerCase() === 'percentage')] = `${percentage}%`;
       newRaw[header.findIndex(h => h.toLowerCase() === 'total')] = formatUSD(totalVal);
       newRaw[header.findIndex(h => h.toLowerCase() === 'note')] = formatVND(totalVal);
 
       auditRow._rawData = newRaw;
       await auditRow.save();
+
     } else {
       const dumpIndex = audit_rows.findIndex(row => row._rawData[0] === '__DUMP__');
       if (dumpIndex === -1) throw new Error("Cannot find placeholder dump row");
@@ -170,13 +182,13 @@ export const getAuditService = AsyncHandler(async (req, res) => {
 
     const staffName = staff._rawData[0].trim();
     const data = rows.find(row => row._rawData[0]?.trim() === staffName);
-    if (!data) return res.status(404).json({ message: "Audit data not found" });
-
     const auditData = {};
-    sheet.headerValues.forEach((header, index) => {
-      auditData[header] = parseCurrency(data._rawData[index]);
-    });
 
+    if (data){
+      sheet.headerValues.forEach((header, index) => {
+        auditData[header] = parseCurrency(data._rawData[index]);
+      });
+    } 
     res.status(200).json(auditData);
   } catch (error) {
     console.error("Error getting audit data:", error);
