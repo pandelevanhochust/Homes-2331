@@ -23,7 +23,7 @@ export const loginAdmin = AsyncHandler( async(req,res) => {
         const {username, password} = req.body;
         const rows = await admin_sheet.getRows();
         
-        const adminRowIndex = rows.findIndex(row => row._rawData[1] === username);
+        const adminRowIndex = rows.findIndex(row => row._rawData[1].trim() === username.trim());
 
         if (!adminRowIndex) {
             return res.status(401).json({ message: "Invalid username" });
@@ -32,7 +32,7 @@ export const loginAdmin = AsyncHandler( async(req,res) => {
         const adminRow = rows[adminRowIndex];
         console.log("here the adminRow",adminRow);
 
-        if (!(adminRow._rawData[2] === password)){
+        if (!(adminRow._rawData[2].trim() === password.trim())){
             return res.status(401).json({ message: "Invalid password" });
         } 
 
