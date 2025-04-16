@@ -29,6 +29,7 @@ function StaffProfileScreen() {
   const [staffData, setStaffData] = useState({});
   const [services, setServices] = useState([]);
   const [services_name,setServicesName] = useState([]);
+  const [showServices, setShowServices] = useState(true);
 
   //Percentage
   const [editPercentage, setEditPercentage] = useState(false);
@@ -319,34 +320,81 @@ function StaffProfileScreen() {
           </ListGroup>
 
           <hr/>
-          {/* Percentage */}
-          <div className="d-flex align-items-center gap-3 mb-3">
-            <h4 className="ms-1">📊 Percentage:</h4>
 
-            {editPercentage ? (
-              <>
-                <Form.Control
-                  type="number"
-                  name="percentage"  
-                  min="0"
-                  max="100"
-                  onChange={handleChange}
-                  value = {staffData.percentage ?? 100}
-                  className="w-25" />
-                <span>%</span>
-                <Button variant="success" size="sm" onClick={updateStaffHandler}> 
-                   ✅
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="mb-0">{staffData.percentage || 100}%</p>
-                <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
-                  ✏️ 
-                </Button>
-              </>
-            )}
-          </div>
+          {(getAuditLoading || auditLoading) && <Loader/>}
+
+          {!getAuditLoading && !auditLoading &&
+          <div className="mt-3 pt-3">
+            {/* <div className="d-flex gap-4">
+              <h6>📊 Percentage:</h6> 
+              <p>{`${staffData.percentage ?? "Not activated"}%`}</p>
+            </div> */}
+
+            {/* Percentage */}
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <h4 className="ms-1">📊 Percentage:</h4>
+
+              {editPercentage ? (
+                <>
+                  <Form.Control
+                    type="number"
+                    name="percentage"  
+                    min="0"
+                    max="100"
+                    onChange={handleChange}
+                    value = {staffData.percentage ?? 100}
+                    className="w-25" />
+                  <span>%</span>
+                  <Button variant="success" size="sm" onClick={updateStaffHandler}> 
+                    ✅
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="mb-0">{staffData.percentage || 100}%</p>
+                  <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
+                    ✏️ 
+                  </Button>
+                </>
+              )}
+            </div>
+
+            <div className="mt-1 d-flex gap-4">
+              <h6>💰 Weekly Total Income:</h6> 
+              <p>
+                {auditData?.Total
+                  ? new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    }).format(Number(auditData.Total))
+                  : "Failed to fetch"}
+              </p>
+            </div>
+
+            <hr/>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+              <p className="col-5 text-start text-primary">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
+              </p>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+              <p className="col-5 text-start text-warning">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
+                  .format(0.1 * ((auditData?.Total || 0) * 24500))}
+              </p>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              <p className="col-5 text-start text-success">
+                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
+              </p>
+            </div>
+          </div>}
 
           <hr />
       
@@ -369,27 +417,46 @@ function StaffProfileScreen() {
             </Button>
           </div>
     
-          <ListGroup variant="flush" className="m-3">
-            {createLoading && <Loader/>}
-            {!createLoading && services.map((service, index) => (
-              <ServiceItem
-                key={index}
-                service={service}
-                index={index}
-                toggleEdit={toggleEditService}
-                handleSave={updateServiceHandler}
-                handleChange={handleServiceChange}
-                handleRemove={removeServiceHandler}
-                auditValue={auditMap[service.service] || ""}
-                weekOffset={weekOffset}
-                setWeekOffset={setWeekOffset}
-                weekFrame={weekFrame}
-                auditData={auditData}
-                updateAuditValue={updateAuditValue}
-                percentage = {staffData.percentage}
-              />
-            ))}
-          </ListGroup>
+          <div className="d-flex justify-content-between align-items-center">
+            <h4 onClick={() => setShowServices(!showServices)} >
+              {showServices ? "🔽 Services" : "▶️ Services"}
+            </h4>
+            <Button
+              variant="outline-primary"
+              size="sm"
+              onClick={addServiceToggler}
+              style={{ fontSize: "0.85rem" }}
+            >
+              ➕ Add
+            </Button>
+          </div>
+
+          <Collapse in={showServices}>
+            <div>
+              <ListGroup variant="flush" className="m-3">
+                {createLoading && <Loader />}
+                {!createLoading &&
+                  services.map((service, index) => (
+                    <ServiceItem
+                      key={index}
+                      service={service}
+                      index={index}
+                      toggleEdit={toggleEditService}
+                      handleSave={updateServiceHandler}
+                      handleChange={handleServiceChange}
+                      handleRemove={removeServiceHandler}
+                      auditValue={auditMap[service.service] || ""}
+                      weekOffset={weekOffset}
+                      setWeekOffset={setWeekOffset}
+                      weekFrame={weekFrame}
+                      auditData={auditData}
+                      updateAuditValue={updateAuditValue}
+                      percentage={staffData.percentage}
+                    />
+                  ))}
+              </ListGroup>
+            </div>
+          </Collapse>
           
           <hr />
           {/* Equipment Section */}
@@ -483,51 +550,6 @@ function StaffProfileScreen() {
             </Button>
           </div>
 
-          {(getAuditLoading || auditLoading) && <Loader/>}
-
-          {!getAuditLoading && !auditLoading &&
-          <div className="mt-3 pt-3">
-            <div className="d-flex gap-4">
-              <h6>📊 Percentage:</h6> 
-              <p>{`${staffData.percentage ?? "Not activated"}%`}</p>
-            </div>
-
-            <div className="mt-1 d-flex gap-4">
-              <h6>💰 Weekly Total Income:</h6> 
-              <p>
-                {auditData?.Total
-                  ? new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: "USD",
-                      maximumFractionDigits: 0,
-                    }).format(Number(auditData.Total))
-                  : "Failed to fetch"}
-              </p>
-            </div>
-
-            <hr/>
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
-              <p className="col-5 text-start text-primary">
-                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
-              </p>
-            </div>
-
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
-              <p className="col-5 text-start text-warning">
-                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
-                  .format(0.1 * ((auditData?.Total || 0) * 24500))}
-              </p>
-            </div>
-
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
-              <p className="col-5 text-start text-success">
-                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
-              </p>
-            </div>
-          </div>}
 
         </Card.Body>
       </Card>
