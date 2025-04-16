@@ -329,10 +329,24 @@ function StaffProfileScreen() {
               <h6>📊 Percentage:</h6> 
               <p>{`${staffData.percentage ?? "Not activated"}%`}</p>
             </div> */}
-
             {/* Percentage */}
+            
+            <div className="d-flex justify-content-between align-items-center">
+              <h4>Audit</h4>
+      
+              <div className="d-flex gap-3">
+                <strong>{weekFrame}</strong>
+                <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
+                  ⬅ Previous Week
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
+                  🔁 Current
+                </Button>
+              </div>
+            </div>
+
             <div className="d-flex align-items-center gap-3 mb-3">
-              <h4 className="ms-1">📊 Percentage:</h4>
+              <h6>📊 Percentage:</h6> 
 
               {editPercentage ? (
                 <>
@@ -358,6 +372,7 @@ function StaffProfileScreen() {
                 </>
               )}
             </div>
+
 
             <div className="mt-1 d-flex gap-4">
               <h6>💰 Weekly Total Income:</h6> 
@@ -415,22 +430,11 @@ function StaffProfileScreen() {
             <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
               ➕ Add
             </Button>
-          </div>
-    
-          <div className="d-flex justify-content-between align-items-center">
             <h4 onClick={() => setShowServices(!showServices)} >
               {showServices ? "🔽 Services" : "▶️ Services"}
             </h4>
-            <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={addServiceToggler}
-              style={{ fontSize: "0.85rem" }}
-            >
-              ➕ Add
-            </Button>
           </div>
-
+          
           <Collapse in={showServices}>
             <div>
               <ListGroup variant="flush" className="m-3">
@@ -531,26 +535,6 @@ function StaffProfileScreen() {
           </div>
   
           <hr/>
-
-          <div className="d-flex justify-content-between align-items-center">
-            <h4>Audit</h4>
-    
-            <div className="d-flex gap-3">
-              <strong>{weekFrame}</strong>
-              <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
-                ⬅ Previous Week
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setWeekOffset(0)}>
-                🔁 Current
-              </Button>
-            </div>
-    
-            <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
-              ➕ Add
-            </Button>
-          </div>
-
-
         </Card.Body>
       </Card>
       )
