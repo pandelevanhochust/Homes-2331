@@ -19,6 +19,9 @@ app.use(cors({
 
 if (process.env.NODE_ENV === "development" ){
     app.use(morgan("dev"));
+    console.log = () => {};
+    console.warn = () => {};
+    console.error = () => {};
 }
 
 app.use(express.json());
