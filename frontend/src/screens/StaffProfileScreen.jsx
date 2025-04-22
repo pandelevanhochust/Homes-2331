@@ -385,31 +385,36 @@ function StaffProfileScreen() {
             </div>
 
             <hr/>
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+            <Row className="align-items-center mb-3">
+            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">                 <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-primary">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
               </p> }
-            </div>
+              </Col>
+              </Row>
 
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+
+              <Row className="align-items-center mb-3">
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">               <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-warning">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
                   .format(0.1 * ((auditData?.Total || 0) * 24500))}
               </p> }
-            </div>
+              </Col>
+              </Row>
 
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              <Row className="align-items-center mb-3">
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">                  <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-success">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
               </p>}
+              </Col>
+              </Row>          
+              
             </div>
-          </div>
 
           <hr />
       
