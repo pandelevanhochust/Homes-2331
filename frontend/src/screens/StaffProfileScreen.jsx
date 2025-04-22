@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Collapse, Form, ListGroup } from "react-bootstrap";
+import { Button, Card, Col, Collapse, Container, Form, ListGroup, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getAuditService } from "../actions/auditAction";
@@ -252,10 +252,12 @@ function StaffProfileScreen() {
     <div>
     {/* { && <Loader/>} */}
     {!staff_detail && <h2 className="text-center mt-5 text-danger">{error}</h2>}
-    {
-      !loading && staff_detail && (
-        <Card className="shadow-lg p-4 d-flex flex-column justify-content-center align-items-center w-100 h-100 mb-5" style={{ minHeight: "100vh", maxWidth: "100vw" }}>
-        {/* Profile Image */}
+    {!loading && staff_detail && (
+
+    <Container fluid className="px-3 "> 
+      <Row className="justify-content-center">
+        <Col xs={12} md={12} lg={10} xl={8} className="profile-container">
+
         <Card.Img
           variant="top"
           src={staffData.image || "https://via.placeholder.com/150"}
@@ -323,19 +325,12 @@ function StaffProfileScreen() {
 
           {(getAuditLoading || auditLoading) && <Loader/>}
 
-          {!getAuditLoading && !auditLoading &&
           <div className="mt-3 pt-3">
-            {/* <div className="d-flex gap-4">
-              <h6>📊 Percentage:</h6> 
-              <p>{`${staffData.percentage ?? "Not activated"}%`}</p>
-            </div> */}
-            {/* Percentage */}
-            
-            <div className="d-flex justify-content-between align-items-center">
-              <h4>Audit</h4>
+          <Row className="align-items-center mb-3">
+          <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">              <h4>Audit</h4>
       
-              <div className="d-flex gap-3">
-                <strong>{weekFrame}</strong>
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+          <strong>{weekFrame}</strong>
                 <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
                   ⬅ Previous Week
                 </Button>
@@ -343,11 +338,12 @@ function StaffProfileScreen() {
                   🔁 Current
                 </Button>
               </div>
-            </div>
+              </Col>
+              </Row>
+
 
             <div className="d-flex align-items-center gap-3 mb-3">
               <h6>📊 Percentage:</h6> 
-
               {editPercentage ? (
                 <>
                   <Form.Control
@@ -364,8 +360,8 @@ function StaffProfileScreen() {
                   </Button>
                 </>
               ) : (
-                <>
-                  <p className="mb-0">{staffData.percentage || 100}%</p>
+                <>          
+                {!getAuditLoading && !auditLoading && <p className="mb-0">{staffData.percentage || 100}%</p> }
                   <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
                     ✏️ 
                   </Button>
@@ -375,7 +371,8 @@ function StaffProfileScreen() {
 
 
             <div className="mt-1 d-flex gap-4">
-              <h6>💰 Weekly Total Income:</h6> 
+              <h6>💰 Weekly Total Income:</h6>
+              {!getAuditLoading && !auditLoading && 
               <p>
                 {auditData?.Total
                   ? new Intl.NumberFormat("en-US", {
@@ -384,41 +381,45 @@ function StaffProfileScreen() {
                       maximumFractionDigits: 0,
                     }).format(Number(auditData.Total))
                   : "Failed to fetch"}
-              </p>
+              </p>}
             </div>
 
             <hr/>
             <div className="d-flex justify-content-between align-items-center mb-2">
               <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+              {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-primary">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
-              </p>
+              </p> }
             </div>
 
             <div className="d-flex justify-content-between align-items-center mb-2">
               <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+              {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-warning">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
                   .format(0.1 * ((auditData?.Total || 0) * 24500))}
-              </p>
+              </p> }
             </div>
 
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-success">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
-              </p>
+              </p>}
             </div>
-          </div>}
+          </div>
 
           <hr />
       
           {/* Services Section */}
-          <div className="d-flex justify-content-between align-items-center">
+          <Row className="align-items-center mb-3">
+          <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">
             <h4>Services</h4>
     
-            <div className="d-flex gap-3">
-              <strong>{weekFrame}</strong>
+            <div className="d-flex flex-wrap gap-2 align-items-center">
+            <strong>{weekFrame}</strong>
               <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
                 ⬅ Previous Week
               </Button>
@@ -433,7 +434,8 @@ function StaffProfileScreen() {
             <h4 onClick={() => setShowServices(!showServices)} >
               {showServices ? "🔽 Services" : "▶️ Services"}
             </h4>
-          </div>
+            </Col>
+            </Row>
           
           <Collapse in={showServices}>
             <div>
@@ -536,7 +538,9 @@ function StaffProfileScreen() {
   
           <hr/>
         </Card.Body>
-      </Card>
+          </Col>
+          </Row>
+      </Container>
       )
     }
     </div>

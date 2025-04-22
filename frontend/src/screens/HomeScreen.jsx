@@ -13,7 +13,7 @@ function HomeScreen() {
   useEffect(() => {
     dispatch(listStaff())
   },[dispatch]);
-
+        
   console.log(staff);
 
   return (

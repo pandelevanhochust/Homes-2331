@@ -27,14 +27,8 @@ if (process.env.NODE_ENV === "development" ){
 app.use(express.json());
 app.use("/api/staff",staffRoutes);
 app.use("/api/admin",adminRoutes);
-// app.use("api/drive").post((req,res) => {
-    
-// })
-
-
 app.use(notFound);
 app.use(errorHandler);
-
 
 
 app.listen(PORT, ()=>{

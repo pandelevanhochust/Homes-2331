@@ -119,13 +119,11 @@ const ServiceItem = ({
         </div>
       </div>
 
-      {/* Middle: Revenue and Audit Controls */}
       <div className="flex-fill d-flex flex-column align-items-start justify-content-between" style={{ minWidth: '200px', flex: 1 }}>
         <div>
           <br />
           <strong>Week's Revenue:</strong>
           <div>{renderAuditedRevenue()}</div>
-          {/* <div>Audited in: {getCurrentDate()}</div> */}
         </div>
 
         {toggleAudit && (
@@ -138,7 +136,6 @@ const ServiceItem = ({
         )}
       </div>
 
-      {/* Right: Buttons */}
       <div className="d-flex flex-column align-items-start gap-2" style={{ minWidth: '150px', flex: 0.5 }}>
         {service.editMode ? (
           <>
