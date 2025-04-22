@@ -386,7 +386,7 @@ function StaffProfileScreen() {
 
             <hr/>
             <Row className="align-items-center mb-3">
-            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">                 <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                 <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-primary">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
@@ -396,7 +396,7 @@ function StaffProfileScreen() {
 
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">               <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">               <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-warning">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
@@ -406,7 +406,7 @@ function StaffProfileScreen() {
               </Row>
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">                  <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                  <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-success">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
