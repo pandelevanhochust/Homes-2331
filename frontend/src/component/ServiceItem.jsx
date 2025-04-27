@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Form, ListGroup, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { auditService } from '../actions/auditAction';
 
@@ -64,16 +64,21 @@ const ServiceItem = ({
 }
 
   return (
-    
-    <ListGroup.Item className="text-start m-2">
+    <Row className="align-items-center mb-3">
+    <Col xs={12}>
+    {/* <ListGroup.Item className="text-start m-2"> */}
      {showAlert && (
         <Alert variant="warning" onClose={() => setShowAlert(false)} dismissible>
           Percentage hasn't been activated
         </Alert>
       )}
-      <div className="d-flex justify-content-between align-items-start mb-4">
-      {/* Left: Service Info */}
-      <div className="flex-fill" style={{ minWidth: '260px', flex: 1 }}>
+
+      <Row className="g-3 d-flex justify-content-between align-items-start mb-4">
+      {/* Left Column: Service Info */}
+      <Col xs={12} md={4}>
+      {/* <div className="d-flex justify-content-between align-items-start mb-4"> */}
+      {/* <div className="flex-fill" style={{ minWidth: '260px', flex: 1 }}> */}
+      <div  >
         <strong>Service:</strong>{' '}
         {service.editMode ? (
           <Form.Select
@@ -90,6 +95,7 @@ const ServiceItem = ({
         ) : (
           service.service
         )}
+      </div>
 
         <div className="mt-2">
           <div>
@@ -104,6 +110,7 @@ const ServiceItem = ({
               service.username
             )}
           </div>
+
           <div>
             <strong>Password:</strong>{' '}
             {service.editMode ? (
@@ -117,14 +124,15 @@ const ServiceItem = ({
             )}
           </div>
         </div>
-      </div>
+      </Col>
 
-      <div className="flex-fill d-flex flex-column align-items-start justify-content-between" style={{ minWidth: '200px', flex: 1 }}>
+      {/* Middle Column: Revenue Audit */}
+      <Col xs={12} md={4}>
+      {/* <div className="flex-fill d-flex flex-column align-items-start justify-content-between" style={{ minWidth: '200px', flex: 1 }}> */}
         <div>
-          <br />
+          {/* <br /> */}
           <strong>Week's Revenue:</strong>
           <div>{renderAuditedRevenue()}</div>
-        </div>
 
         {toggleAudit && (
           <Form.Control
@@ -134,43 +142,47 @@ const ServiceItem = ({
             onChange={(e) => setRevenue(e.target.value)}
           />
         )}
-      </div>
+        </div>
+      </Col>
 
-      <div className="d-flex flex-column align-items-start gap-2" style={{ minWidth: '150px', flex: 0.5 }}>
+      {/* Right Column: Action Buttons */}
+      <Col xs={12} md={4} className="d-flex flex-wrap gap-2">
+      {/* <div className="d-flex flex-column align-items-start gap-2" style={{ minWidth: '150px', flex: 0.5 }}> */}
         {service.editMode ? (
           <>
-            <Button variant="success" size="sm" onClick={() => handleSave(index)}>
+            <Button className='button_service' variant="success" size="sm" onClick={() => handleSave(index)}>
               Add
             </Button>
-            <Button variant="danger" size="sm" onClick={() => handleRemove(index)}>
+            <Button className='button_service' variant="danger" size="sm" onClick={() => handleRemove(index)}>
               Remove
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => toggleEdit(index)}>
+            <Button className='button_service' variant="secondary" size="sm" onClick={() => toggleEdit(index)}>
               Cancel
             </Button>
           </>
         ) : toggleAudit ? (
           <>
-            <Button variant="primary" size="sm" onClick={AuditServiceHandler}>
+            <Button className='button_service' variant="primary" size="sm" onClick={AuditServiceHandler}>
               Save Audit
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => setToggleAudit(false)}>
+            <Button className='button_service' variant="secondary" size="sm" onClick={() => setToggleAudit(false)}>
               Cancel
             </Button>
           </>
         ) : (
           <>
-            <Button variant="warning" size="sm" onClick={() => setToggleAudit(true)}>
+            <Button className='button_service' variant="warning" size="sm" onClick={() => setToggleAudit(true)}>
               Audit
             </Button>
-            <Button variant="info" size="sm" onClick={() => toggleEdit(index)}>
+            <Button className='button_service' variant="info" size="sm" onClick={() => toggleEdit(index)}>
               Edit
             </Button>
           </>
         )}
-      </div>
-    </div>
-    </ListGroup.Item>
+      </Col>
+    </Row>
+    </Col>
+    </Row>
   );
 };
 

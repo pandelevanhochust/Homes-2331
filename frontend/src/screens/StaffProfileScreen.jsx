@@ -341,7 +341,6 @@ function StaffProfileScreen() {
               </Col>
               </Row>
 
-
             <div className="d-flex align-items-center gap-3 mb-3">
               <h6>📊 Percentage:</h6> 
               {editPercentage ? (
@@ -386,7 +385,7 @@ function StaffProfileScreen() {
 
             <hr/>
             <Row className="align-items-center mb-3">
-            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                 <h6 className="ms-5 text-primary">🛠️ Original Debt Value:</h6>
+            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                 <h6 className="ms-1 text-primary">🛠️ Original Debt Value:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-primary">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
@@ -396,7 +395,7 @@ function StaffProfileScreen() {
 
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">               <h6 className="ms-5 text-warning">💸 Deduction (10% of weekly income):</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">               <h6 className="ms-1 text-warning">💸 Deduction (10% of weekly income):</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-warning">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
@@ -406,7 +405,7 @@ function StaffProfileScreen() {
               </Row>
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                  <h6 className="ms-5 text-success">✅ Remaining Equipment Debt:</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                  <h6 className="ms-1 text-success">✅ Remaining Equipment Debt:</h6>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-success">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
@@ -419,10 +418,12 @@ function StaffProfileScreen() {
           <hr />
       
           {/* Services Section */}
-          <Row className="align-items-center mb-3">
+          <Row className="align-items-center mb-5">
           <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">
-            <h4>Services</h4>
-    
+          <h4 onClick={() => setShowServices(!showServices)} >
+              {showServices ? "🔽 Services" : "▶️ Services"}
+            </h4>
+
             <div className="d-flex flex-wrap gap-2 align-items-center">
             <strong>{weekFrame}</strong>
               <Button size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
@@ -436,15 +437,13 @@ function StaffProfileScreen() {
             <Button style={{ background: "none", border: "none", color: "gray" }} onClick={addServiceToggler}>
               ➕ Add
             </Button>
-            <h4 onClick={() => setShowServices(!showServices)} >
-              {showServices ? "🔽 Services" : "▶️ Services"}
-            </h4>
             </Col>
             </Row>
           
           <Collapse in={showServices}>
             <div>
               <ListGroup variant="flush" className="m-3">
+
                 {createLoading && <Loader />}
                 {!createLoading &&
                   services.map((service, index) => (
@@ -465,6 +464,7 @@ function StaffProfileScreen() {
                       percentage={staffData.percentage}
                     />
                   ))}
+
               </ListGroup>
             </div>
           </Collapse>
@@ -481,7 +481,7 @@ function StaffProfileScreen() {
           <Collapse in={showEquipment}>
             <div>
             {(equipment.length > 0) && equipment.map((equip,index) => (
-              <ListGroup.Item key={index} className="ms-5 mb-2 d-flex gap-3"> 
+              <ListGroup.Item key={index} className="ms-1 mb-2 d-flex gap-3"> 
                 <div className="col-6">
                   <strong>{equip}</strong>
                 </div>
@@ -497,7 +497,7 @@ function StaffProfileScreen() {
             </Button> }
       
             {addEquipment && 
-              <div className="d-flex align-items-center gap-2 ms-5 w-100 mt-3">
+              <div className="d-flex align-items-center gap-2 ms-1 w-100 mt-3">
                 <Form.Select className="w-25" onChange={(e) => setSelectedEquipment(e.target.value)}>
                   <option value="">Select Equipment</option>
                   <option value="Camera">Camera</option>
@@ -537,7 +537,7 @@ function StaffProfileScreen() {
 
 
           <div className="d-flex justify-content-between align-items-center">
-            <h6 className="ms-5"> Total Equipment Debt: </h6> 
+            <h6 className="ms-1"> Total Equipment Debt: </h6> 
             <p className="col-5 text-start" >{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}</p>
           </div>
   
