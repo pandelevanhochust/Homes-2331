@@ -34,9 +34,8 @@ console.log(localStorage.getItem("userInfo"));
 const userInfoFromStorage = localStorage.getItem("userInfo")
     ? JSON.parse(localStorage.getItem("userInfo")) : null;
 
-// console.log(localStorage.getItem("staff"));
-// const staffListFromStorage = localStorage.getItem("staff")
-//     ?JSON.parse(localStorage.getItem("staff")) : null;
+// const staffListFromStorage = localStorage.getItem("userInfo")
+// ? JSON.parse(localStorage.getItem("userInfo")) : null;
 
 const initialState = {
     adminLogin: {userInfo: userInfoFromStorage},

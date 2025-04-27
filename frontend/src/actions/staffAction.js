@@ -25,12 +25,12 @@ export const createStaff = (staff) => async(dispatch,getState) => {
             type: STAFF_CREATE_REQUEST,
         });
 
-        const {adminLogin: {userInfo},} = getState();
+        const {adminLogin: {userInfo}} = getState();
         console.log(userInfo.token);
         console.log("Authorization Header:", `Bearer ${userInfo.token}`);
 
 
-        const response = await fetch(`${API_BASE}/api/staff`,{
+        const response = await fetch(`${API_BASE}/api/staff?admin_id=${admin_id}`,{
             method : "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -56,13 +56,15 @@ export const createStaff = (staff) => async(dispatch,getState) => {
     }
 };
 
-export const listStaff = () => async (dispatch) => {
+export const listStaff = () => async (dispatch,getState) => {
     try{
         dispatch ({
             type: STAFF_LIST_REQUEST
         })
 
-        const response  = await fetch(`${API_BASE}/api/staff`,{
+        const {adminLogin: {userInfo}} = getState();
+        console.log("admin login",userInfo);
+        const response  = await fetch(`${API_BASE}/api/staff?admin_id=${userInfo.admin_id}`,{
             method : "GET",
         }
         );
@@ -89,6 +91,7 @@ export const listStaff = () => async (dispatch) => {
 
 export const updateStaff = (staff) => async (dispatch,getState) =>{
     console.log("recieved body: ",staff);
+    
     try{
         dispatch({
             type: STAFF_UPDATE_REQUEST,
@@ -96,7 +99,7 @@ export const updateStaff = (staff) => async (dispatch,getState) =>{
         
         const {adminLogin: {userInfo},} = getState();
 
-        const respone = await fetch(`${API_BASE}/api/staff/${staff.id}`,{
+        const respone = await fetch(`${API_BASE}/api/staff/${staff.id}?admin_id=${userInfo.admin_id}`,{
             method: "PUT",
             headers: {  
                 "Content-Type": "application/json",
@@ -162,7 +165,7 @@ export const getStaffDetail = (id) => async(dispatch,getState) =>{
         })
         const {adminLogin: {userInfo}} = getState();
 
-        const response = await fetch(`${API_BASE}/api/staff/${id}`,{
+        const response = await fetch(`${API_BASE}/api/staff/${id}?admin_id=${userInfo.admin_id}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

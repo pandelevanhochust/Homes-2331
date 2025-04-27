@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Col, Collapse, Container, Form, ListGroup, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { getAuditService } from "../actions/auditAction";
 import { createService, deleteService, updateService } from "../actions/serviceAction";
 import { getStaffDetail, updateStaff } from "../actions/staffAction";
@@ -14,6 +14,10 @@ function StaffProfileScreen() {
 
   const dispatch = useDispatch();
   const { id } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const admin_id = searchParams.get('admin_id');
 
   // Fetching staff details from Redux state
   const { loading, success: staffDetailSuccess, error, staff_detail } = useSelector((state) => state.staffDetail);
@@ -22,7 +26,6 @@ function StaffProfileScreen() {
   const { loading: deleteLoading, success: deleteSuccess} = useSelector((state) => state.serviceDelete);
   const { loading: getAuditLoading, success: getAuditSuccess, auditData } = useSelector((state) => state.getServiceAudit);
   const { loading: auditLoading, success: auditSuccess } = useSelector((state) => state.serviceAudit);
-  // const { loading: staffUpdateLoading, success:  
 
   const [editBasicInfo, setEditBasicInfo] = useState(false);
   const [addOrEdit, setAddOrEdit] = useState("edit");
@@ -103,7 +106,7 @@ function StaffProfileScreen() {
       }));
       setServices(services);
   
-      const serviceNames = services.map((srv) => srv.service);
+      const serviceNames = services.map((srv) => srv.service.trim());
       setServicesName(serviceNames);
       setEquipmentDebt(Number(staff_detail.equipmentDebt) ?? 0);
 
@@ -125,17 +128,17 @@ function StaffProfileScreen() {
       const newAuditMap = {};
 
       services_name.forEach((svc) => {
-        const revenue = auditData[svc] || ""; // fallback to empty if not found
+        const revenue = auditData[svc] || ""; 
         newAuditMap[svc] = revenue;
       });
 
       setAuditMap(newAuditMap);
     }
   }, [auditData, services_name]);
-
   
-  console.log(staff_detail);
+  console.log("Here the staff detail",staff_detail);
   console.log(services);
+  console.log(services_name);
 
   // Handle Basic Info Changes
   const handleChange = (e) => {
@@ -260,8 +263,8 @@ function StaffProfileScreen() {
 
         <Card.Img
           variant="top"
-          src={staffData.image || "https://via.placeholder.com/150"}
-          alt={staffData.name}
+          src= "/woman-svgrepo-com.svg"
+          alt="/woman-svgrepo-com.svg"
           className="rounded-circle mx-auto d-block shadow-sm"
           style={{ width: "150px", height: "150px", objectFit: "cover" }}
         />
@@ -323,7 +326,7 @@ function StaffProfileScreen() {
 
           <hr/>
 
-          {(getAuditLoading || auditLoading) && <Loader/>}
+          {/* {(getAuditLoading || auditLoading) && <Loader/>} */}
 
           <div className="mt-3 pt-3">
           <Row className="align-items-center mb-3">
@@ -354,16 +357,18 @@ function StaffProfileScreen() {
                     value = {staffData.percentage ?? 100}
                     className="w-25" />
                   <span>%</span>
-                  <Button variant="success" size="sm" onClick={updateStaffHandler}> 
+                  <Button variant="success" size="sm" onClick={async () => {
+                        updateStaffHandler();
+                        }}>
                     ✅
                   </Button>
                 </>
               ) : (
                 <>          
                 {!getAuditLoading && !auditLoading && <p className="mb-0">{staffData.percentage || 100}%</p> }
-                  <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
+                {weekOffset ==0 && <Button variant="outline-primary" size="sm" onClick={() => setEditPercentage(true)}>
                     ✏️ 
-                  </Button>
+                  </Button>}
                 </>
               )}
             </div>
@@ -371,13 +376,14 @@ function StaffProfileScreen() {
 
             <div className="mt-1 d-flex gap-4">
               <h6>💰 Weekly Total Income:</h6>
+              {/* {getAuditLoading || auditLoading && <Spinner animation="border" size="sm" />} */}
               {!getAuditLoading && !auditLoading && 
               <p>
                 {auditData?.Total
                   ? new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
-                      maximumFractionDigits: 0,
+                      maximumFractionDigits: 3,
                     }).format(Number(auditData.Total))
                   : "Failed to fetch"}
               </p>}
@@ -385,7 +391,7 @@ function StaffProfileScreen() {
 
             <hr/>
             <Row className="align-items-center mb-3">
-            <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                 <h6 className="ms-1 text-primary">🛠️ Original Debt Value:</h6>
+            <Col xs={12} className="d-flex flex-wrap justify-content-between ">                 <h6 className=" text-primary">🛠️ Original Debt Value:</h6> <span>  </span>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-primary">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(totalEquipmentDebt)}
@@ -395,19 +401,19 @@ function StaffProfileScreen() {
 
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">               <h6 className="ms-1 text-warning">💸 Deduction (10% of weekly income):</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between">               <h6 className=" text-warning">💸 Deduction (10% of weekly income):</h6> <span></span>
               {!getAuditLoading && !auditLoading &&
               <p className="col-5 text-start text-warning">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" })
-                  .format(0.1 * ((auditData?.Total || 0) * 24500))}
+                  .format(((auditData?.Total || 0) * 24500))}
               </p> }
               </Col>
               </Row>
 
               <Row className="align-items-center mb-3">
-              <Col xs={12} className="d-flex flex-wrap justify-content-between gap-1">                  <h6 className="ms-1 text-success">✅ Remaining Equipment Debt:</h6>
+              <Col xs={12} className="d-flex flex-wrap justify-content-between">                  <h6 className=" text-success">✅ Remaining Equipment Debt:  </h6> <span>  </span>
               {!getAuditLoading && !auditLoading &&
-              <p className="col-5 text-start text-success">
+              <p className="ms-2 col-5 text-start text-success">
                 {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(staffData.equipmentDebt)}
               </p>}
               </Col>
@@ -418,7 +424,7 @@ function StaffProfileScreen() {
           <hr />
       
           {/* Services Section */}
-          <Row className="align-items-center mb-5">
+          <Row className="align-items-center mb-1">
           <Col xs={12} className="d-flex flex-wrap justify-content-between gap-2">
           <h4 onClick={() => setShowServices(!showServices)} >
               {showServices ? "🔽 Services" : "▶️ Services"}

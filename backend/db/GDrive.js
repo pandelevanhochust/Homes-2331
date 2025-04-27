@@ -9,12 +9,13 @@ dotenv.config();
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const AUDIT_FOLDER = process.env.FOLDER_NAME;
+const SERVICES = process.env.SERVICES?.split(",") || [];
+
+console.log(SERVICES);
 
 const STAFF_ROW_COUNT = 150;
 const RETRY_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 20000;
-
-const SERVICES = ['SM', 'Chathostess', 'Sakuralive', 'Imlive','Manyvids','Stripchat','Bonga','Findom (Skrill)','Kwiky'];
 
 //Align Cells
 export const centerAlignSheetCells = async (sheet) => {

@@ -50,6 +50,7 @@ export const loginAdmin = (username,password) => async(dispatch) => {
 
 export const logoutAdmin = () => (dispatch) => {
     localStorage.removeItem("userInfo");
+    localStorage.removeItem("staffList");
     dispatch({type: ADMIN_LOGOUT});
 }
  

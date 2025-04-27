@@ -29,6 +29,6 @@ export const adminLoginReducer = (state={}, action) => {
     }
 }
 
-export const  adminLogoutReducer = (action) => {
+export const adminLogoutReducer = (action) => {
     
 }

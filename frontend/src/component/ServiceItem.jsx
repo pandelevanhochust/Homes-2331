@@ -3,6 +3,9 @@ import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { auditService } from '../actions/auditAction';
 
+const SERVICES = import.meta.env.VITE_SERVICES?.split(",") || [];
+console.log("Services",SERVICES);
+
 const ServiceItem = ({
   service,
   index,
@@ -64,7 +67,7 @@ const ServiceItem = ({
 }
 
   return (
-    <Row className="align-items-center mb-3">
+    <Row className="align-items-center">
     <Col xs={12}>
     {/* <ListGroup.Item className="text-start m-2"> */}
      {showAlert && (
@@ -73,24 +76,22 @@ const ServiceItem = ({
         </Alert>
       )}
 
-      <Row className="g-3 d-flex justify-content-between align-items-start mb-4">
+      <Row className="g-3 d-flex justify-content-between align-items-start">
       {/* Left Column: Service Info */}
       <Col xs={12} md={4}>
-      {/* <div className="d-flex justify-content-between align-items-start mb-4"> */}
-      {/* <div className="flex-fill" style={{ minWidth: '260px', flex: 1 }}> */}
       <div  >
         <strong>Service:</strong>{' '}
         {service.editMode ? (
           <Form.Select
+          size="sm"
+          style={{ width: "100%", maxWidth: "250px" }}
             value={service.service}
             required
             onChange={(e) => handleChange(index, 'service', e.target.value)}
           >
             <option value="">Select a service</option>
-            <option value="SM">SM</option>
-            <option value="Chat">Chat</option>
-            <option value="Sakura">Sakura</option>
-            <option value="Imlive">Imlive</option>
+            {SERVICES.map((ser) => <option key={ser} value = {ser}> {ser} </option>)}
+
           </Form.Select>
         ) : (
           service.service
@@ -128,9 +129,7 @@ const ServiceItem = ({
 
       {/* Middle Column: Revenue Audit */}
       <Col xs={12} md={4}>
-      {/* <div className="flex-fill d-flex flex-column align-items-start justify-content-between" style={{ minWidth: '200px', flex: 1 }}> */}
         <div>
-          {/* <br /> */}
           <strong>Week's Revenue:</strong>
           <div>{renderAuditedRevenue()}</div>
 
@@ -171,12 +170,16 @@ const ServiceItem = ({
           </>
         ) : (
           <>
-            <Button className='button_service' variant="warning" size="sm" onClick={() => setToggleAudit(true)}>
-              Audit
-            </Button>
-            <Button className='button_service' variant="info" size="sm" onClick={() => toggleEdit(index)}>
-              Edit
-            </Button>
+            {weekOffset === 0 && (
+              <>
+                <Button className='button_service' variant="warning" size="sm" onClick={() => setToggleAudit(true)}>
+                  Audit
+                </Button>
+                <Button className='button_service' variant="info" size="sm" onClick={() => toggleEdit(index)}>
+                  Edit
+                </Button>
+              </>
+            )}
           </>
         )}
       </Col>

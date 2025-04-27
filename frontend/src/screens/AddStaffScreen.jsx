@@ -5,6 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { createStaff } from '../actions/staffAction';
 
 function AddStaffScreen() {
+  
+  const adminLogin = useSelector((state) => state.adminLogin);
+  const {userInfo} = adminLogin;
+
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

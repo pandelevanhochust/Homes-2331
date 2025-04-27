@@ -11,12 +11,11 @@ const ADMIN_SHEET = process.env.ADMIN_SHEET;
 const SERVICE_SHEET = process.env.SERVICE_SHEET;
 const SHEET_ID = process.env.SHEET_ID;
 
-
-// let doc;
-
 // GET api/staff/       
 export const listStaff = AsyncHandler(async (req, res) => { 
     try {
+        const {admin_id} = req.query;
+
         const doc = await connectGoogleSheet(SHEET_ID);
         // connect two sheets
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
@@ -58,10 +57,15 @@ export const listStaff = AsyncHandler(async (req, res) => {
             note : row._rawData[6] || "",
             service: mapService[row._rawData[1]] || [],
             percentage: row._rawData[7] || null,
+            admin_id: row._rawData[8] || null,
+            week_income: row._rawData[9] || null,
         }));
 
+        const staff_filtered = staff.filter((item) => item.admin_id === admin_id);
+        if(staff_filtered.length === 0) res.status(404).json("No staff found for this admin");
+
         console.log(staff)
-        res.status(200).json(staff);
+        res.status(200).json(staff_filtered);
     } catch (error) {
         console.error('Error retrieving staff data:', error);
         res.status(500).json({ message: 'Failed to retrieve data' });
@@ -71,6 +75,8 @@ export const listStaff = AsyncHandler(async (req, res) => {
 // POST api/staff
 export const createStaff = AsyncHandler(async (req, res) => {
     try {
+        const {admin_id} = req.query;
+
         console.log("Received body:", req.body);
         const { name, username, password, role, service, image, type} = req.body;
 
@@ -104,6 +110,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
                 Equipment: "",
                 EquipmentDebt: 0,
                 Percentage: null,
+                admin_id: admin_id,
             });
             
             const service_id = await generateID(serviceSheet);
@@ -129,12 +136,13 @@ export const updateStaff = AsyncHandler(async (req, res) => {
     try {
         const { _id, name, image, type, equipment, equipmentDebt, note, percentage} = req.body;
         const {id} = req.params;
+        const {admin_id} = req.query;
 
         // Connect to Google Sheet
         const doc = await connectGoogleSheet(SHEET_ID);
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
         const rows = await staffSheet.getRows();
-        const staffRowIndex = rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id));
+        const staffRowIndex = rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id) && parseInt(row._rawData[8]) === parseInt(admin_id));
 
         if (staffRowIndex === -1) {
             return res.status(404).json({ message: "Staff member not found" });
@@ -180,6 +188,7 @@ export const updateStaff = AsyncHandler(async (req, res) => {
                 note: staffRow._rawData[6],
                 id: id,
                 percentage: staffRow._rawData[7],
+                admin_id: admin_id,
             },
         });
 
@@ -193,6 +202,7 @@ export const updateStaff = AsyncHandler(async (req, res) => {
 export const getStaffDetail = AsyncHandler(async(req,res) => {
     try{
         const {id} = req.params;
+        const {admin_id} = req.query;
 
         const doc = await connectGoogleSheet(SHEET_ID);
         const staffSheet = doc.sheetsByTitle[STAFF_SHEET];
@@ -206,7 +216,7 @@ export const getStaffDetail = AsyncHandler(async(req,res) => {
         };
         
         console.log(staff_rows);
-        const staffRowIndex = staff_rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id));
+        const staffRowIndex = staff_rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id) && parseInt(row._rawData[8]) === parseInt(admin_id));
 
         if (staffRowIndex === -1) {
             return res.status(404).json({ message: "Staff member not found" });
@@ -240,6 +250,8 @@ export const getStaffDetail = AsyncHandler(async(req,res) => {
             id :  staffRow._rawData[1],
             service: mapService[staffRow._rawData[1]] || [],
             percentage: staffRow._rawData[7] || null,
+            admin_id: admin_id,
+            week_income: staffRow._rawData[9] || null,
         });
 
     }catch(error){
