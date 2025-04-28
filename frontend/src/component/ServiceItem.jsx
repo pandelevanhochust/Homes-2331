@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Collapse, Form, Row, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { auditService } from '../actions/auditAction';
 
@@ -31,6 +31,7 @@ const ServiceItem = ({
   const { loading: createLoading, success: createSuccess} = useSelector((state) => state.serviceCreate);
   
   const [showAlert, setShowAlert] = useState(false); 
+  const [toggleService,setToggleService] = useState(false);
 
 
   useEffect(() => {
@@ -79,8 +80,8 @@ const ServiceItem = ({
       <Row className="g-3 d-flex justify-content-between align-items-start">
       {/* Left Column: Service Info */}
       <Col xs={12} md={4}>
-      <div  >
-        <strong>Service:</strong>{' '}
+      <div>
+        <strong onClick={() => setToggleService(!toggleService)}> {toggleService ? "🔽 Services" : "▶️ Services"} </strong>{' '}
         {service.editMode ? (
           <Form.Select
           size="sm"
@@ -97,8 +98,9 @@ const ServiceItem = ({
           service.service
         )}
       </div>
-
-        <div className="mt-2">
+      
+      <Collapse in={toggleService}>
+      <div className="mt-2">
           <div>
             <strong>Username:</strong>{' '}
             {service.editMode ? (
@@ -125,6 +127,8 @@ const ServiceItem = ({
             )}
           </div>
         </div>
+      </Collapse>
+
       </Col>
 
       {/* Middle Column: Revenue Audit */}
