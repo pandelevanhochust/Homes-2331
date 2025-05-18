@@ -81,7 +81,13 @@ const ServiceItem = ({
       {/* Left Column: Service Info */}
       <Col xs={12} md={4}>
       <div>
-        <strong onClick={() => setToggleService(!toggleService)}> {toggleService ? "🔽 Services" : "▶️ Services"} </strong>{' '}
+      <strong>
+        <span onClick={() => setToggleService(!toggleService)} style={{ cursor: 'pointer' }}>
+          {editMode === false ? (toggleService ? "🔽" : "▶️") : null}
+        </span>
+        {' '}Service:
+      </strong>
+      
         {service.editMode ? (
           <Form.Select
           size="sm"
@@ -99,7 +105,7 @@ const ServiceItem = ({
         )}
       </div>
       
-      <Collapse in={toggleService}>
+      <Collapse in={toggleService && !editMode}>
       <div className="mt-2">
           <div>
             <strong>Username:</strong>{' '}
