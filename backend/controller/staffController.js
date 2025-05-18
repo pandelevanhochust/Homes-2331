@@ -221,7 +221,13 @@ export const getStaffDetail = AsyncHandler(async(req,res) => {
         };
         
         console.log(staff_rows);
-        const staffRowIndex = staff_rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id) && parseInt(row._rawData[8]) === parseInt(admin_id));
+        
+        let staffRowIndex;
+        if (admin_id.trim() !== "fullaccess"){
+            staffRowIndex = staff_rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id) && parseInt(row._rawData[8]) === parseInt(admin_id));
+        }else{
+            staffRowIndex = staff_rows.findIndex(row => parseInt(row._rawData[1]) === parseInt(id));
+        }
 
         if (staffRowIndex === -1) {
             return res.status(404).json({ message: "Staff member not found" });
