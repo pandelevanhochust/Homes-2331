@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Button, Col, Collapse, Form, Row, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { auditService } from '../actions/auditAction';
@@ -83,7 +83,7 @@ const ServiceItem = ({
       <div>
       <strong>
         <span onClick={() => setToggleService(!toggleService)} style={{ cursor: 'pointer' }}>
-          {editMode === false ? (toggleService ? "🔽" : "▶️") : null}
+          {service.editMode === false ? (toggleService ? "🔽" : "▶️") : null}
         </span>
         {' '}Service:
       </strong>
