@@ -64,7 +64,7 @@ export const listStaff = AsyncHandler(async (req, res) => {
         let staff_filtered = [];
 
         if (admin_id.trim() !== "fullaccess"){
-            const staff_filtered = staff.filter((item) => item.admin_id === admin_id);
+            staff_filtered = staff.filter((item) => item.admin_id === admin_id);
             if(staff_filtered.length === 0) res.status(404).json("No staff found for this admin");
         } else{
             staff_filtered = staff;
