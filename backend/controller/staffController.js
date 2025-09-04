@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import AsyncHandler from 'express-async-handler';
+import { accessImageFolder, uploadImagetoDrive } from '../db/GDrive.js';
 import generateID from '../db/ID.js';
 import connectGoogleSheet from '../db/sheet.js';
 
@@ -83,8 +84,18 @@ export const createStaff = AsyncHandler(async (req, res) => {
         const {admin_id} = req.query;
 
         console.log("Received body:", req.body);
-        const { name, username, password, role, service, image, type} = req.body;
+        const { name, username, password, role, service, type} = req.body;
+        const file = req.file;
 
+        let uploadedImageData = {webViewLink: "none"};
+
+        if (file){
+            const folderId = await accessImageFolder();
+            uploadedImageData = await uploadImagetoDrive(file.webkitRelativePath,file.name,folderId);
+        }
+
+        console.log("Image reach here",file);
+        
         if (!name || !role) {
             return res.status(400).json({ message: 'Missing required fields: name and role are required' });
         }
@@ -126,6 +137,7 @@ export const createStaff = AsyncHandler(async (req, res) => {
                 Service: service || "none",
                 Username: username || "N/A",
                 Password: password || "N/A",
+                Image: image.name || null,
             });
         }
 

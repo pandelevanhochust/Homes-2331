@@ -10,6 +10,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const AUDIT_FOLDER = process.env.FOLDER_NAME;
 const SERVICES = process.env.SERVICES?.split(",") || [];
+const IMAGE_FOLDER = null;
 
 console.log(SERVICES);
 
@@ -123,6 +124,52 @@ export const accessAuditFolder = async () => {
         return null;
     }
     return folderID;
+}
+
+export const accessImageFolder = async () => {
+    const folderID = await accessFolder(IMAGE_FOLDER);
+    if(!folderID){
+      return null;
+    }
+    return folderID;
+}
+
+//Upload File to Drive
+export const uploadImagetoDrive = async (filePath,fileName,folderID) => {
+  try {
+    const drive = serviceAccountAuth();
+
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderID],
+    }
+
+    const media = {
+      mimeType: "image/jpeg",
+      body: fs.createReadStream(filePath),
+    };
+
+    const response = await drive.files.create({
+      resource: fileMetadata,
+      media: media,
+      fields: "id, webViewLink, webContentLink",
+    });
+
+    // await drive.permissions.create({
+    //   fileId: response.data.id,
+    //   requestBody: {
+    //   role: "reader",
+    //   type: "anyone",
+    //   },
+    // });
+    
+    console.log("File uploaded:", response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error("Error uploading image to Drive:", error);
+    return null;
+    }
 }
 
 //Create googleSheets

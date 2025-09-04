@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { createStaff } from '../actions/staffAction';
 
@@ -16,7 +16,7 @@ function AddStaffScreen() {
   const [role, setRole] = useState("staff");
   const [service, setService] = useState("none");
   const [image, setImage] = useState("none");
-  const [type, setType] = useState("online"); // Default to "Online"
+  const [type, setType] = useState("online"); 
   const [errors, setErrors] = useState({});
 
   const dispatch = useDispatch();
@@ -54,7 +54,8 @@ function AddStaffScreen() {
     service,
     username,
     password,
-    image: image ? image.name : "none",
+    image: image, 
+    //? image.name : "none",
   };
 
   const handleSubmit = (e) => {

@@ -33,7 +33,7 @@ export const createStaff = (staff) => async(dispatch,getState) => {
         const response = await fetch(`${API_BASE}/api/staff?admin_id=${admin_id}`,{
             method : "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "multipart/form-data",
                 Authorization : `Bearer ${userInfo.token}`,
             },
             body: JSON.stringify(staff),
@@ -102,7 +102,7 @@ export const updateStaff = (staff) => async (dispatch,getState) =>{
         const respone = await fetch(`${API_BASE}/api/staff/${staff.id}?admin_id=${userInfo.admin_id}`,{
             method: "PUT",
             headers: {  
-                "Content-Type": "application/json",
+                "Content-Type": "multipart/form-data",
                 Authorization : `Bearer ${userInfo.token}`,
             },
             body: JSON.stringify(staff),
